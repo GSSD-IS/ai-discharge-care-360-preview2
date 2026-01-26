@@ -1,9 +1,10 @@
 import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
-// Note: In mock mode, we assume user is already logged in as Admin
 const AdminLayout: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isActive = (path: string) => location.pathname === path;
 
     return (
         <div className="flex h-screen bg-slate-50">
@@ -17,7 +18,17 @@ const AdminLayout: React.FC = () => {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">
-                    <button onClick={() => navigate('/admin')} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-600/20 text-indigo-400 font-medium">
+                    <button
+                        onClick={() => navigate('/admin')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+                    >
+                        <i className="fas fa-chart-line w-5 text-center"></i>
+                        Dashboard
+                    </button>
+                    <button
+                        onClick={() => navigate('/admin/tenants')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/tenants') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+                    >
                         <i className="fas fa-hospital-alt w-5 text-center"></i>
                         Tenants
                     </button>

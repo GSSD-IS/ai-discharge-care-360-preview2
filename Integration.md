@@ -211,6 +211,18 @@
 >
 > **[Product_Manager]**: 太棒了。現在我們有了表單建立工具，下一步是「將表單綁定至流程節點」。這需要修改 `WorkflowEditor`，在 `StageNode` 的屬性面板中增加「綁定表單」的下拉選單。
 >
+> **[User]**: 發行到Github
+---
+**[DevOps_Engineer]**: 收到。正在將最新的 SaaS 功能 (登入頁、後台架構) 推送到 GitHub。
+`git push` 執行中...
+Vercel 應會自動偵測 `main` 分支變更並觸發部署。
+
+**[Deployment Status]**:
+- Commit: `feat: Implement SaaS Login, Multi-tenancy Mock, and Admin Dashboard`
+- Branch: `main`
+- Trigger: Vercel Auto-deploy
+
+請留意您的 Vercel Dashboard，預計 1-2 分鐘內完成更新。
 > **[Frontend_Architect]**: 收到。正在處理：
 > 1. **更新型別**: 在 `WorkflowNode` 增加 `formId?: string` 欄位。
 > 2. **更新 UI**: 在 `WorkflowEditor` 增加表單選擇器，並呼叫 `/forms` API 取得可用表單列表。
@@ -499,6 +511,50 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 - `git commit`
 - Create `vercel.json`
 
-執行中...
+**[Frontend_Architect]**: SaaS 介面實作完成。
+- **Login Page**: 與 `mockData.ts` 整合，支援「護理師」與「管理者」兩種身分模擬。
+- **Admin Layout**: 建立獨立的後台佈局。
+- **Build Status**: `npm run build` 通過 ✅。
+
+請點擊 Demo 連結體驗：
+- `/login`: 登入頁面
+- `/admin`: 後台管理 (需先以 Admin 身分登入)
+
+---
+**[DevOps_Engineer]**: GitHub 發行任務執行報告。
+- **Commit**: `feat: Implement SaaS Login, Multi-tenancy Mock, and Admin Dashboard`
+- **Push Status**: 成功推送到 `main` 分支。
+- **Deployment**: Vercel 已偵測變更並自動部署。
+
+**現在狀態**: SaaS 前端功能已上線，您可以前往 Vercel URL 進行驗收。
 
 
+
+**[User]**: 1.主頁面改進入登入畫面, 登入Admin進後台管理, 登入護理人員進入portal , 2.專家進行後台討論.
+---
+**[Product_Manager]**: 收到明確指令。
+1. **Entry Point**: `/` 根路徑不再直接進入 Dashboard，而是重定向至 `/login`。
+2. **Role-based Redirection**:
+    - `Nurse` -> `/clinical` (原 Dashboard)
+    - `SuperAdmin` -> `/admin` (SaaS 後台)
+3. **Admin Feature Discussion**: 我們需要定義後台的具體功能。
+
+**[SaaS_Architect]**: 針對 **後台 (Admin/Backstage)**，我建議 Phase 5.2 實作以下核心模組：
+1.  **Tenant Dashboard (租戶總覽)**:
+    -   顯示所有醫院列表、訂閱狀態、活躍用戶數。
+    -   關鍵指標：MRR (月經常性收入)、總病患數。
+2.  **User Management (用戶管理)**:
+    -   跨租戶查詢用戶 (方便客服 Debug)。
+    -   重設密碼 / 停權功能。
+3.  **Audit Logs (審計日誌)**:
+    -   記錄關鍵操作 (如：開通新醫院、匯出病患資料)，以符合 HIPAA/資安規範。
+
+**[UI_UX_Designer]**:
+後台視覺應採用 **"Dense & Data-rich"** 風格，不同於臨床端的 "Touch-friendly"。
+-   使用 Data Grid (表格) 展示大量數據。
+-   左側導航欄應包含：Dashboard, Tenants, Users, Settings。
+
+**[Action Plan]**:
+1.  **Refactor Routing**: 修改 `App.tsx`，將 `/` 設為 Guard，未登入者導向 `/login`。
+2.  **Implement Admin Dashboard**: 擴充 `AdminLayout`，實作數據概覽 (Mock Stats)。
+3.  **Enhance Tenant Management**: 增加詳細資訊視圖。
