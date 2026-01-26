@@ -1,5 +1,7 @@
 import { type Patient, CaseStatus, DischargeType, DepartmentRole } from "../types/template";
+import { type Tenant, type User, UserRole } from "../types/saas";
 
+// --- Mock Patients (Clinical Data) ---
 export const initialPatients: Patient[] = [
     {
         id: "8821",
@@ -104,5 +106,62 @@ export const initialPatients: Patient[] = [
         assessments: [
             { role: DepartmentRole.Physiotherapist, status: "評估中", lastNote: "建議居家復健", updatedAt: "2023-11-27" }
         ]
+    }
+];
+
+// --- Mock SaaS Data (Tenants & Users) ---
+
+export const mockTenants: Tenant[] = [
+    {
+        id: 't1',
+        name: '臺大醫院',
+        subdomain: 'ntuh',
+        themeColor: '#1e40af', // blue-800
+        status: 'Active'
+    },
+    {
+        id: 't2',
+        name: '長庚紀念醫院',
+        subdomain: 'cgmh',
+        themeColor: '#b91c1c', // red-700
+        status: 'Active'
+    },
+    {
+        id: 't3',
+        name: '康寧醫院 (試用)',
+        subdomain: 'kangning',
+        themeColor: '#059669', // emerald-600
+        status: 'Trial'
+    }
+];
+
+export const mockUsers: User[] = [
+    {
+        id: 'u1',
+        email: 'admin@care360.com',
+        name: 'Platform Admin',
+        role: UserRole.SuperAdmin,
+        tenantId: 'platform'
+    },
+    {
+        id: 'u2',
+        email: 'nurse@ntuh.com',
+        name: '林護理師',
+        role: UserRole.Nurse,
+        tenantId: 't1'
+    },
+    {
+        id: 'u3',
+        email: 'admin@ntuh.com',
+        name: '臺大管理者',
+        role: UserRole.TenantAdmin,
+        tenantId: 't1'
+    },
+    {
+        id: 'u4',
+        email: 'nurse@cgmh.com',
+        name: '陳專員',
+        role: UserRole.Nurse,
+        tenantId: 't2'
     }
 ];

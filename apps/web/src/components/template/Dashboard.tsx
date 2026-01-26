@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { type Patient, CaseStatus } from '../../types/template';
 
+
 interface DashboardProps {
     patients: Patient[];
     onSelectPatient: (p: Patient) => void;

@@ -272,6 +272,55 @@
 > ---
 > **[User]**: 頁面設計必須使用ai-discharge-care-360.zip 內的風格.
 > ---
+> **[User]**: vercel 回應... (顯示只建置了 `api`，忽略了 `web`)
+**[DevOps_Engineer]**: 偵測到部署目標錯誤。
+Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Frontend)。
+這通常是因為 Vercel 在 Monorepo 根目錄自動偵測到了 `api` 的設定，或者 Build Command 未指定 `--filter=web`。
+
+**[Analysis]**:
+- 目前 Scope: `api`
+- 目標 Scope: `web`
+
+**[Solution]**: 需要調整 Vercel 的 **Project Settings**。
+1. **Root Directory**: 改為 `apps/web`。
+2. 或 **Build Command**: 改為 `cd ../.. && npx turbo run build --filter=web` (若 Root Directory 保持預設)。
+
+建議採用方案 1 (更改 Root Directory)，這樣 Vercel 會自動套用 Vite 的預設設定。
+
+
+> **[User]**: 接下來設計登入界面. 以及後台. SaaS 多租戶設計.
+---
+**[Product_Manager]**: 收到。用戶希望暫緩 AI，優先建構 **SaaS 商業落地** 的核心基礎：登入、後台與多租戶架構。
+這意味著我們需要從「前端展示」轉向「全端架構 (Full-stack Architecture)」。
+
+**[SaaS_Architect]**:
+這是關鍵的轉折點。針對 **SaaS Multi-tenancy (多租戶)**，我提出以下架構方案：
+
+1.  **資料隔離策略 (Data Isolation)**:
+    -   採用 **Discriminator Column** 模式：所有 Table 增加 `tenant_id` 欄位。
+    -   實作 **RLS (Row Level Security)**: 若使用 Supabase/PostgreSQL，透過 RLS 強制隔離，確保 A 醫院看不到 B 醫院的病患。
+
+2.  **登入流程 (Authentication Flow)**:
+    -   **識別租戶**: 用戶輸入 Email 後，系統判斷其所屬 Tenant。
+    -   **White-labeling**: 登入頁面應根據 Subdomain (例如 `ntuh.care360.com`) 或 Tenant 設定，動態載入該醫院的 Logo 與配色。
+
+3.  **後台設計 (Admin/Backstage)**:
+    -   **Platform Admin (總後台)**: 我們 (SaaS 營運方) 使用。管理 Subscription, Onboard 新醫院。
+    -   **Tenant Admin (醫院後台)**: 醫院管理者使用。管理該院帳號 (護理師/社工)、Audit Logs。
+
+**[UI_UX_Designer]**:
+設計登入介面時，請考慮 **"Modern & Trustworthy"** 風格。
+-   左側：品牌形象/行銷圖 (可輪播)。
+-   右側：登入表單 (Email/Password + SSO)。
+-   **關鍵細節**: 必須預留 "Powered by [System]" 但給予醫院足夠的品牌露出空間。
+
+**[Action Plan]**:
+1.  **Frontend**: 建立 `/login` 與 `/admin` 路由。
+2.  **Mock Data**: 擴充 `mockPatients.ts`，新增 `mockTenants` 與 `mockUsers` 以模擬多租戶環境。
+3.  **Component**: 實作支援換膚 (Theming) 的登入組件。
+
+請問用戶，我們是否先以 **Frontend Mock** 方式實作這些 SaaS 介面，以便您快速檢視設計？ (因為接真實 DB 需要較多時間設定)
+
 > **[UI_UX_Designer]**: 收到指令，立即進行視覺移植。
 > 分析 `ai-discharge-care-360.zip` 內容：
 > 1. **Color Palette**: Dark Slate Sidebar (`bg-slate-900`) + Sky Blue Access (`text-sky-500`).
@@ -395,7 +444,42 @@
 2. **Risk Calculation**: 實作簡單的風險計算規則 (Rule-based first)。
 3. **Data Binding**: 讓前端能真正保存用戶輸入的資料 (使用 LocalStorage 或簡易 Backend)。
 
-請問用戶，是否同意進入 **Phase 4**？我將優先處理 **AI 衛教生成** 的串接。
+請問用戶，我們是否使用您提供的 Key (`AIzaSy...`) 開始進行 Phase 4.1 開發？
+
+---
+**[User]**: 接下來設計登入界面. 以及後台. SaaS 多租戶設計.
+---
+**[Product_Manager]**: 收到。用戶希望暫緩 AI，優先建構 **SaaS 商業落地** 的核心基礎：登入、後台與多租戶架構。
+這意味著我們需要從「前端展示」轉向「全端架構 (Full-stack Architecture)」。
+
+**[SaaS_Architect]**:
+這是關鍵的轉折點。針對 **SaaS Multi-tenancy (多租戶)**，我提出以下架構方案：
+
+1.  **資料隔離策略 (Data Isolation)**:
+    -   採用 **Discriminator Column** 模式：所有 Table 增加 `tenant_id` 欄位。
+    -   實作 **RLS (Row Level Security)**: 若使用 Supabase/PostgreSQL，透過 RLS 強制隔離，確保 A 醫院看不到 B 醫院的病患。
+
+2.  **登入流程 (Authentication Flow)**:
+    -   **識別租戶**: 用戶輸入 Email 後，系統判斷其所屬 Tenant。
+    -   **White-labeling**: 登入頁面應根據 Subdomain (例如 `ntuh.care360.com`) 或 Tenant 設定，動態載入該醫院的 Logo 與配色。
+
+3.  **後台設計 (Admin/Backstage)**:
+    -   **Platform Admin (總後台)**: 我們 (SaaS 營運方) 使用。管理 Subscription, Onboard 新醫院。
+    -   **Tenant Admin (醫院後台)**: 醫院管理者使用。管理該院帳號 (護理師/社工)、Audit Logs。
+
+**[UI_UX_Designer]**:
+設計登入介面時，請考慮 **"Modern & Trustworthy"** 風格。
+-   左側：品牌形象/行銷圖 (可輪播)。
+-   右側：登入表單 (Email/Password + SSO)。
+-   **關鍵細節**: 必須預留 "Powered by [System]" 但給予醫院足夠的品牌露出空間。
+
+**[Action Plan]**:
+1.  **Frontend**: 建立 `/login` 與 `/admin` 路由。
+2.  **Mock Data**: 擴充 `mockPatients.ts`，新增 `mockTenants` 與 `mockUsers` 以模擬多租戶環境。
+3.  **Component**: 實作支援換膚 (Theming) 的登入組件。
+
+請問用戶，我們是否先以 **Frontend Mock** 方式實作這些 SaaS 介面，以便您快速檢視設計？ (因為接真實 DB 需要較多時間設定)
+我將優先處理 **AI 衛教生成** 的串接。
 ---
 **[User]**: 先關聯Github 準備將Demo網頁發佈至vercel.
 ---
