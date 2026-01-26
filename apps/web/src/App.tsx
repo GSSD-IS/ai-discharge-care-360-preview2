@@ -6,6 +6,11 @@ import AdminLayout from './components/saas/AdminLayout';
 import AdminDashboard from './components/saas/AdminDashboard';
 import { TenantManagementPage } from './pages/admin/TenantManagementPage';
 import { UserRole } from './types/saas';
+import PatientLayout from './components/patient/PatientLayout';
+import PatientHome from './pages/patient/PatientHome';
+import MyPlan from './pages/patient/MyPlan';
+import Education from './pages/patient/Education';
+import RBACSettings from './pages/admin/RBACSettings';
 
 // Mock Auth Guard
 const RequireAuth: React.FC<{ children: React.ReactNode, allowedRoles?: UserRole[] }> = ({ children, allowedRoles }) => {
@@ -54,8 +59,17 @@ const App: React.FC = () => {
                 }>
                     <Route index element={<AdminDashboard />} />
                     <Route path="tenants" element={<TenantManagementPage />} />
+                    <Route path="rbac" element={<RBACSettings />} />
+                    <Route path="billing" element={<div className="p-8 font-bold text-slate-400">Billing Module Placeholder</div>} />
                 </Route>
 
+                {/* Patient Portal */}
+                <Route path="/patient" element={<PatientLayout />}>
+                    <Route path="home" element={<PatientHome />} />
+                    <Route path="plan" element={<MyPlan />} />
+                    <Route path="education" element={<Education />} />
+                    <Route index element={<Navigate to="home" replace />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );

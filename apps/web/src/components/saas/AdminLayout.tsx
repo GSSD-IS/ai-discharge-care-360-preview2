@@ -36,9 +36,19 @@ const AdminLayout: React.FC = () => {
                         <i className="fas fa-users-cog w-5 text-center"></i>
                         平台用戶 (Users)
                     </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 transition font-medium">
+                    <button
+                        onClick={() => navigate('/admin/billing')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/billing') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+                    >
                         <i className="fas fa-file-invoice-dollar w-5 text-center"></i>
                         訂閱與帳單 (Billing)
+                    </button>
+                    <button
+                        onClick={() => navigate('/admin/rbac')}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/rbac') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+                    >
+                        <i className="fas fa-shield-key w-5 text-center"></i>
+                        權限設定 (RBAC)
                     </button>
                 </nav>
 

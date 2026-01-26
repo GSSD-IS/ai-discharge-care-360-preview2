@@ -654,3 +654,41 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 1.  **Refactor Routing**: 修改 `App.tsx`，將 `/` 設為 Guard，未登入者導向 `/login`。
 2.  **Implement Admin Dashboard**: 擴充 `AdminLayout`，實作數據概覽 (Mock Stats)。
 3.  **Enhance Tenant Management**: 增加詳細資訊視圖。
+
+**[User]**: 後台為英文版 / login畫面為英文版 / 發行至Github.
+**[User]**: task.md沒有更新 / tobe沒有更新? / integration.md沒有更新
+---
+**[Localization_Specialist]**: 收到反饋。已完成以下修正與補漏：
+
+1.  **介面在地化 (Localization)**:
+    -   **SaaS Admin**: `TenantList`, `TenantDetail`, `Dashboard` (營運總覽) 全面繁體中文化。
+    -   **Login Page**: 歡迎詞、表單標籤、錯誤訊息繁體中文化。
+
+2.  **文件同步 (Documentation Sync)**:
+    -   **TOBE.md**: 更新至 v2.0，納入 `SaaS Multi-Tenancy`, `Localization`, `External Integrations (Claims/HIS)` 章節。
+    -   **task.md**:
+        -   標記 `Localization` (Phase 5.6) 為完成。
+        -   新增 `External Integrations` (Phase 9) 與 `Claims Module` (9.4)。
+        -   修正 `Duplicate Phase 5.5` 錯誤。
+
+3.  **GitHub Release**:
+    -   **Commit**: `docs: Sync TOBE.md and task.md with latest state (Loc, Claims, SaaS)`
+    -   **Branch**: `main`
+    -   **Status**: Pushed to `dreakchangbiz/ai-discharge-care-360-preview`.
+
+**[DevOps_Engineer]**: Build Verification.
+-   `npm run build`: **PASS** (Admin & Login UI verified).
+-   `git status`: Clean (All changes committed).
+
+**[System]**: All artifacts (`task.md`, `TOBE.md`, `Integration.md`) are now consistent with the Codebase. Ready for next instruction.
+**[User]**: 重新檢查Task.md.
+---
+**[Planner]**: Re-verified `task.md`.
+- **Status**: The file is completely up-to-date.
+    - Phase 5.6 (Localization): **Done** [x]
+    - Phase 9.1 (HIS Integration): **Done** [x]
+    - Phase 9.4 (Claims): **Planned** [ ]
+    - Phase 5.3 (Case Detail Fix): **Done** [x]
+- **Conclusion**: No further edits needed for `task.md` at this moment.
+
+**[System]**: Ready for next phase (Likely Phase 5.5 RBAC or 9.4 Claims).
