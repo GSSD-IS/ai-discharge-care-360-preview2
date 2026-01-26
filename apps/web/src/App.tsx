@@ -4,7 +4,7 @@ import ClinicalApp from './ClinicalApp';
 import LoginPage from './components/saas/LoginPage';
 import AdminLayout from './components/saas/AdminLayout';
 import AdminDashboard from './components/saas/AdminDashboard';
-import TenantManagement from './components/saas/TenantManagement';
+import { TenantManagementPage } from './pages/admin/TenantManagementPage';
 import { UserRole } from './types/saas';
 
 // Mock Auth Guard
@@ -53,7 +53,7 @@ const App: React.FC = () => {
                     </RequireAuth>
                 }>
                     <Route index element={<AdminDashboard />} />
-                    <Route path="tenants" element={<TenantManagement />} />
+                    <Route path="tenants" element={<TenantManagementPage />} />
                 </Route>
 
             </Routes>

@@ -113,25 +113,87 @@ export const initialPatients: Patient[] = [
 
 export const mockTenants: Tenant[] = [
     {
-        id: 't1',
-        name: '臺大醫院',
-        subdomain: 'ntuh',
-        themeColor: '#1e40af', // blue-800
-        status: 'Active'
+        id: 't1', name: '臺大醫院', subdomain: 'ntuh', themeColor: '#1e40af', status: 'Active',
+        plan: 'Enterprise', userCount: 450, renewalDate: '2026-12-31',
+        config: { features: { ai: true, pac: true } }
     },
     {
-        id: 't2',
-        name: '長庚紀念醫院',
-        subdomain: 'cgmh',
-        themeColor: '#b91c1c', // red-700
-        status: 'Active'
+        id: 't2', name: '長庚紀念醫院', subdomain: 'cgmh', themeColor: '#b91c1c', status: 'Active',
+        plan: 'Enterprise', userCount: 380, renewalDate: '2026-11-20',
+        config: { features: { ai: true, pac: true } }
     },
     {
-        id: 't3',
-        name: '康寧醫院 (試用)',
-        subdomain: 'kangning',
-        themeColor: '#059669', // emerald-600
-        status: 'Trial'
+        id: 't3', name: '康寧醫院 (試用)', subdomain: 'kangning', themeColor: '#059669', status: 'Trial',
+        plan: 'Basic', userCount: 15, renewalDate: '2026-02-15',
+        config: { features: { ai: false, pac: false } }
+    },
+    {
+        id: 't4', name: '板橋中興醫院', subdomain: 'ban-ch', themeColor: '#d97706', status: 'Active',
+        plan: 'Pro', userCount: 85, renewalDate: '2026-06-30'
+    },
+    {
+        id: 't5', name: '永和耕莘醫院', subdomain: 'cth', themeColor: '#7c3aed', status: 'Active',
+        plan: 'Pro', userCount: 120, renewalDate: '2026-08-15'
+    },
+    {
+        id: 't6', name: '雙和醫院', subdomain: 'shh', themeColor: '#0891b2', status: 'Active',
+        plan: 'Enterprise', userCount: 200, renewalDate: '2026-10-01'
+    },
+    {
+        id: 't7', name: '馬偕紀念醫院', subdomain: 'mmh', themeColor: '#15803d', status: 'Active',
+        plan: 'Enterprise', userCount: 320, renewalDate: '2027-01-01'
+    },
+    {
+        id: 't8', name: '新光醫院', subdomain: 'skh', themeColor: '#be185d', status: 'Suspended',
+        plan: 'Pro', userCount: 95, renewalDate: '2025-12-31'
+    },
+    {
+        id: 't9', name: '國泰綜合醫院', subdomain: 'cgh', themeColor: '#0f766e', status: 'Active',
+        plan: 'Enterprise', userCount: 280, renewalDate: '2026-09-15'
+    },
+    {
+        id: 't10', name: '亞東紀念醫院', subdomain: 'femh', themeColor: '#ea580c', status: 'Active',
+        plan: 'Enterprise', userCount: 310, renewalDate: '2026-07-20'
+    },
+    {
+        id: 't11', name: '台北慈濟醫院', subdomain: 'tzuchi', themeColor: '#047857', status: 'Active',
+        plan: 'Pro', userCount: 150, renewalDate: '2026-05-10'
+    },
+    {
+        id: 't12', name: '耕莘安康院區', subdomain: 'cth-ak', themeColor: '#6d28d9', status: 'Trial',
+        plan: 'Basic', userCount: 20, renewalDate: '2026-03-01'
+    },
+    {
+        id: 't13', name: '恩主公醫院', subdomain: 'ech', themeColor: '#b45309', status: 'Active',
+        plan: 'Pro', userCount: 110, renewalDate: '2026-04-15'
+    },
+    {
+        id: 't14', name: '振興醫院', subdomain: 'chgh', themeColor: '#0369a1', status: 'Active',
+        plan: 'Enterprise', userCount: 220, renewalDate: '2026-08-30'
+    },
+    {
+        id: 't15', name: '萬芳醫院', subdomain: 'wf', themeColor: '#16a34a', status: 'Active',
+        plan: 'Pro', userCount: 180, renewalDate: '2026-06-15'
+    },
+    {
+        id: 't16', name: '北醫附醫', subdomain: 'tmu', themeColor: '#dc2626', status: 'Active',
+        plan: 'Enterprise', userCount: 290, renewalDate: '2026-11-10'
+    },
+    {
+        id: 't17', name: '聯合醫院中興院區', subdomain: 'tpe-ch', themeColor: '#4f46e5', status: 'Active',
+        plan: 'Pro', userCount: 130, renewalDate: '2026-05-20'
+    },
+    {
+        id: 't18', name: '聯合醫院仁愛院區', subdomain: 'tpe-ja', themeColor: '#ca8a04', status: 'Active',
+        plan: 'Pro', userCount: 125, renewalDate: '2026-05-20'
+    },
+    {
+        id: 't19', name: '聯合醫院和平院區', subdomain: 'tpe-hp', themeColor: '#0891b2', status: 'Suspended',
+        plan: 'Basic', userCount: 80, renewalDate: '2025-11-30'
+    },
+    {
+        id: 't20', name: '台大癌醫中心', subdomain: 'ntucc', themeColor: '#9f1239', status: 'Active',
+        plan: 'Enterprise', userCount: 160, renewalDate: '2026-12-15'
     }
 ];
 

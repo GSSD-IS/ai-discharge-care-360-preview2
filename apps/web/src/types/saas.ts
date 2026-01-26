@@ -15,6 +15,10 @@ export interface Tenant {
     logoUrl?: string; // URL to logo image
     themeColor: string; // Primary color hex code
     status: 'Active' | 'Trial' | 'Suspended';
+    plan: 'Basic' | 'Pro' | 'Enterprise';
+    userCount: number;
+    renewalDate: string;
+    config?: Record<string, any>;
 }
 
 export interface User {
