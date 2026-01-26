@@ -22,12 +22,12 @@ export const TenantManagementPage: React.FC = () => {
         <div className="p-8 max-w-7xl mx-auto relative min-h-screen">
             <header className="flex justify-between items-end mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Tenants</h1>
-                    <p className="text-slate-500">Manage all admitted hospitals and clinics.</p>
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight mb-2">租戶管理 (Tenants)</h1>
+                    <p className="text-slate-500">管理所有合作醫院與診所的存取權限。</p>
                 </div>
                 <button className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 shadow-lg flex items-center gap-2">
                     <i className="fas fa-plus"></i>
-                    Onboard New Tenant
+                    新增租戶 (Onboard)
                 </button>
             </header>
 
@@ -43,7 +43,7 @@ export const TenantManagementPage: React.FC = () => {
                                     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
-                            {f}
+                            {f === 'All' ? '全部' : f === 'Active' ? '啟用中' : f === 'Trial' ? '試用中' : '已停權'}
                         </button>
                     ))}
                 </div>
@@ -51,7 +51,7 @@ export const TenantManagementPage: React.FC = () => {
                     <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input
                         type="text"
-                        placeholder="Search hospitals..."
+                        placeholder="搜尋醫院名稱或代碼..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 w-64"

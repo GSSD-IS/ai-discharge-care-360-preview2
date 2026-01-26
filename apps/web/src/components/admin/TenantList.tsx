@@ -15,13 +15,13 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, onSelectTenant 
                 <table className="w-full text-left text-sm text-slate-600">
                     <thead className="bg-slate-50 text-xs uppercase font-semibold text-slate-500">
                         <tr>
-                            <th className="px-6 py-4">Tenant Name</th>
-                            <th className="px-6 py-4">Subdomain</th>
-                            <th className="px-6 py-4">Plan</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4 text-right">Users</th>
-                            <th className="px-6 py-4 text-right">Renewal</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                            <th className="px-6 py-4">租戶名稱 (Tenant Name)</th>
+                            <th className="px-6 py-4">子網域 (Subdomain)</th>
+                            <th className="px-6 py-4">訂閱方案 (Plan)</th>
+                            <th className="px-6 py-4">狀態 (Status)</th>
+                            <th className="px-6 py-4 text-right">用戶數 (Users)</th>
+                            <th className="px-6 py-4 text-right">續約日 (Renewal)</th>
+                            <th className="px-6 py-4 text-right">操作 (Actions)</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -58,7 +58,7 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, onSelectTenant 
                                 <td className="px-6 py-4 text-right text-slate-400">{tenant.renewalDate}</td>
                                 <td className="px-6 py-4 text-right">
                                     <button className="text-slate-400 hover:text-indigo-600 font-bold text-xs">
-                                        Manage
+                                        管理
                                     </button>
                                 </td>
                             </tr>
@@ -68,7 +68,7 @@ export const TenantList: React.FC<TenantListProps> = ({ tenants, onSelectTenant 
             </div>
             {tenants.length === 0 && (
                 <div className="p-12 text-center text-slate-400">
-                    No tenants found matching your criteria.
+                    未找到符合條件的租戶。
                 </div>
             )}
         </div>

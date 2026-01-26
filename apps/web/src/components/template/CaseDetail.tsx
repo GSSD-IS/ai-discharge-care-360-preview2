@@ -60,8 +60,117 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
         [DepartmentRole.Doctor]: 'fa-user-doctor'
     };
 
+
+    const [showEmr, setShowEmr] = useState(false);
+
+    const handleViewEMR = () => {
+        // In real world, this calls HIS API via FHIR
+        setShowEmr(true);
+    };
+
+    const handlePublish = () => {
+        // Simulate API call
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            alert("✅ 出院準備計畫已發布！\n\n- 家屬 App 通知: 已發送\n- 居家護理機構: 已同步\n- 健保申報系統: 待傳送 (Queue)");
+        }, 800);
+    };
+
     return (
-        <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative">
+            {/* EMR Modal Overlay */}
+            {showEmr && (
+                <div className="absolute inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-8">
+                    <div className="bg-white w-full max-w-4xl h-full max-h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                                    <i className="fas fa-file-medical-alt text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-800">電子病歷調閱 (HIS Integration)</h3>
+                                    <p className="text-xs text-slate-500 font-mono">Source: FHIR Gateway | Patient ID: {patient.id}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowEmr(false)} className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-500 hover:text-slate-700 flex items-center justify-center transition">
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-8 bg-white font-mono text-sm">
+                            <div className="grid grid-cols-2 gap-8">
+                                <section>
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Recent Diagnosis (ICD-10)</h4>
+                                    <ul className="space-y-3">
+                                        <li className="flex justify-between">
+                                            <span className="font-bold text-slate-700">I10</span>
+                                            <span className="text-slate-500">Essential (primary) hypertension</span>
+                                        </li>
+                                        <li className="flex justify-between">
+                                            <span className="font-bold text-slate-700">E11.9</span>
+                                            <span className="text-slate-500">Type 2 diabetes mellitus without complications</span>
+                                        </li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Lab Results (Last 24h)</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center bg-red-50 p-2 rounded border border-red-100">
+                                            <span className="font-bold text-red-700">HbA1c</span>
+                                            <div className="text-right">
+                                                <div className="font-bold text-red-700">8.5 %</div>
+                                                <div className="text-[10px] text-red-400">Ref: 4.0-5.6</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center p-2">
+                                            <span className="font-bold text-slate-700">Creatinine</span>
+                                            <div className="text-right">
+                                                <div className="font-bold text-slate-700">1.1 mg/dL</div>
+                                                <div className="text-[10px] text-slate-400">Ref: 0.7-1.2</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="col-span-2">
+                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 border-b pb-2">Medication History</h4>
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="text-xs text-slate-400">
+                                                <th className="pb-2">Drug Name</th>
+                                                <th className="pb-2">Dosage</th>
+                                                <th className="pb-2">Frequency</th>
+                                                <th className="pb-2">Start Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-slate-600">
+                                            <tr className="border-b border-slate-50">
+                                                <td className="py-2 font-bold">Metformin</td>
+                                                <td className="py-2">500mg</td>
+                                                <td className="py-2">BID (AC)</td>
+                                                <td className="py-2">2023-01-15</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="py-2 font-bold">Amlodipine</td>
+                                                <td className="py-2">5mg</td>
+                                                <td className="py-2">QD</td>
+                                                <td className="py-2">2023-05-20</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </section>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                            <button className="text-xs text-indigo-600 font-bold hover:underline">
+                                View Full EMR via HIS Gateway <i className="fas fa-external-link-alt ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shadow-sm">
                 <div className="flex items-center gap-4">
@@ -76,10 +185,19 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition uppercase tracking-wider">
-                        <i className="fas fa-file-medical mr-2 text-slate-300"></i>病歷調閱
+                    <button
+                        onClick={handleViewEMR}
+                        className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition uppercase tracking-wider flex items-center gap-2"
+                    >
+                        <i className="fas fa-file-medical text-slate-400"></i>
+                        病歷調閱
                     </button>
-                    <button className="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition shadow-lg shadow-sky-600/20 uppercase tracking-wider">
+                    <button
+                        onClick={handlePublish}
+                        disabled={loading}
+                        className="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 transition shadow-lg shadow-sky-600/20 uppercase tracking-wider flex items-center gap-2"
+                    >
+                        {loading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
                         發布出院計畫
                     </button>
                 </div>

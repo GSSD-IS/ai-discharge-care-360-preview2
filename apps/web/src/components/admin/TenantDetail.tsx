@@ -33,7 +33,7 @@ export const TenantDetail: React.FC<TenantDetailProps> = ({ tenant, onClose }) =
                 {/* Status Card */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Status</div>
+                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">狀態 (Status)</div>
                         <div className={`font-bold text-lg flex items-center gap-2 ${tenant.status === 'Active' ? 'text-emerald-600' :
                                 tenant.status === 'Trial' ? 'text-sky-600' : 'text-red-600'
                             }`}>
@@ -42,21 +42,21 @@ export const TenantDetail: React.FC<TenantDetailProps> = ({ tenant, onClose }) =
                         </div>
                     </div>
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">Plan</div>
+                        <div className="text-xs text-slate-400 uppercase font-bold mb-1">方案 (Plan)</div>
                         <div className="font-bold text-lg text-slate-800">{tenant.plan}</div>
                     </div>
                 </div>
 
                 {/* Subscription Info */}
                 <section>
-                    <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">Subscription Details</h3>
+                    <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">訂閱詳情 (Subscription)</h3>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500">Renewal Date</span>
+                            <span className="text-sm text-slate-500">下次續約日</span>
                             <span className="text-sm font-bold text-slate-800">{tenant.renewalDate}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500">Active Users</span>
+                            <span className="text-sm text-slate-500">活躍用戶數</span>
                             <span className="text-sm font-bold text-slate-800">{tenant.userCount} / {
                                 tenant.plan === 'Basic' ? 50 :
                                     tenant.plan === 'Pro' ? 200 : 'Unlimited'
@@ -71,7 +71,7 @@ export const TenantDetail: React.FC<TenantDetailProps> = ({ tenant, onClose }) =
                 {/* Feature Flags */}
                 {tenant.config?.features && (
                     <section>
-                        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">Feature Configuration</h3>
+                        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 mb-4 uppercase tracking-wider">功能配置 (Features)</h3>
                         <div className="grid grid-cols-1 gap-3">
                             {Object.entries(tenant.config.features).map(([key, enabled]) => (
                                 <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
@@ -87,9 +87,9 @@ export const TenantDetail: React.FC<TenantDetailProps> = ({ tenant, onClose }) =
 
                 {/* Danger Zone */}
                 <section className="pt-8 mt-8 border-t border-slate-100">
-                    <h3 className="text-xs font-bold text-red-500 mb-4 uppercase tracking-wider">Danger Zone</h3>
+                    <h3 className="text-xs font-bold text-red-500 mb-4 uppercase tracking-wider">危險操作區 (Danger Zone)</h3>
                     <button className="w-full border border-red-200 bg-red-50 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors">
-                        Suspend Tenant
+                        停用此租戶 (Suspend Tenant)
                     </button>
                 </section>
             </div>
