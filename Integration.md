@@ -387,12 +387,31 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 >
 > **[Action Plan]**:
 > 1. 移植 Template 所有靜態資料 (`types.ts`, `App.tsx` 中的 data)。
-> 2. 移植 5 大核心頁面組件。
-> 3. 修正路由以顯示這些組件。
->
-> ---
 > **[Coder]**: 報告！Phase 3 前端組件移植全數完成。
-> *   **移植組件**: `Dashboard`, `CaseDetail`, `DischargePlanningHub`, `WardTeamHub`, `FollowUpTracking`, `DataAnalytics`, `PatientPortal`, `NewCaseModal`.
+> *   **移植組件**: `Dashboard`, `CaseDetail`, `DischargePlanningHub`, `WardTeamHub`, `FollowUpTracking`, `DataAnaly`**[Frontend_Architect]**: 任務完成。所有 Demo 頁面已上線。
+
+**[Status Update]**:
+1.  **Phase 5.4 Patient Portal**:
+    -   **URL**: `/patient/home`, `/patient/plan`, `/patient/education`
+    -   **Feature**: 手機版 RWD, 下方導航, 清晰大字體。
+2.  **Phase 9.4 Claims Dashboard**:
+    -   **URL**: `/clinical/claims` (需權限)
+    -   **Feature**: B/D/G 碼申報檢視, 狀態標籤 (Draft/Submitted).
+3.  **Phase 6.2 Clinical Monitor**:
+    -   **URL**: `/clinical/monitor`
+    -   **Feature**: 模擬即時生命徵象 (HR, SpO2), 自動波動, E1 異常紅燈警示。
+4.  **Phase 7.2 Physician Workspace**:
+    -   **URL**: `/clinical/workspace`
+    -   **Feature**: 待審核清單, 異常否決 (Override), 批准按鈕。
+5.  **Phase 5.5 RBAC Settings**:
+    -   **URL**: `/admin/rbac`
+    -   **Feature**: 角色權限矩陣檢視。
+
+**[DevOps_Engineer]**: Codebase updated.
+-   `git push` to `main` with commit `feat: Implement all Demo Pages...`
+-   `task.md` synchronized (All phases marked [x]).
+
+**[System]**: All tasks in `task.md` are completed. Ready for Final Review.`, `NewCaseModal`.
 > *   **輔助組件**: `RiskRadar` (圖表相依於 Recharts).
 > *   **資料層**: 建立 `mockPatients.ts` 模擬真實臨床數據。
 > *   **入口整合**: 更新 `App.tsx` 與 `index.css`，實現側邊欄導航與組件路由。
