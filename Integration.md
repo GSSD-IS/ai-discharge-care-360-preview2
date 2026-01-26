@@ -526,7 +526,103 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 - **Push Status**: 成功推送到 `main` 分支。
 - **Deployment**: Vercel 已偵測變更並自動部署。
 
-**現在狀態**: SaaS 前端功能已上線，您可以前往 Vercel URL 進行驗收。
+**[Frontend_Architect]**: 後台設計與路由架構更新完成。
+- **Admin Dashboard**: 新增儀表板 (`/admin`)，展示平台關鍵指標 (Mock Data)。
+- **Auth Routing**: 重構 `App.tsx`，實作嚴格的角色路由守衛 (`RequireAuth`)。
+    - `/` -> Redirect to Login
+    - `Nurse` -> Redirect to Clinical
+    - `Admin` -> Redirect to Admin SaaS
+
+- **Build Status**: `npm run build` 通過 ✅。
+
+請點擊 Demo 連結體驗最新流程：
+1. 嘗試訪問根目錄 `/` (應自動導向 Login)。
+2. 使用 Admin 帳號登入，體驗新的 Dashboard。
+
+---
+**[User]**: 直接發行, 我在Vercel上看
+---
+**[DevOps_Engineer]**: 收到。正在執行部署程序。
+- **Commit**: `feat: Implement Admin Dashboard and Role-based Routing`
+- **Push**: `git push` to `main`.
+- **Status**: Vercel Auto-Deployment Triggered.
+
+**[User]**: 繼續討論後台多租戶設計
+---
+**[Product_Manager]**: 收到。現在前端 Mock 已完成，我們需要為 "Real Backend" 的多租戶架構定調。核心問題：
+1. **資料隔離 (Isolation)**: 怎麼保證 A 醫院看不到 B 醫院的病患？
+2. **功能開關 (Feature Flag)**: 如何控制 C 醫院有 AI 功能，但 D 醫院沒有？
+3. **新增租戶 (Onboarding)**: 開通新醫院的流程？
+
+**[SaaS_Architect]**: 針對 **PostgreSQL + Prisma** 生態，我強烈建議採用 **Row Level Security (RLS)** 方案，而非單純的 Application-level isolation。
+
+### 1. 資料隔離策略 (Isolation Strategy)
+-   **方案**: **Discriminator Column + RLS**.
+-   **實作**:
+    -   所有資料表 (`Patient`, `Case`, `Form`) 增加 `tenantId` 欄位。
+    -   **Database Policy**: 在 PostgreSQL 層級設定 `CREATE POLICY "Tenant Isolation" ON "Patient" USING (tenant_id = current_setting('app.current_tenant')::uuid);`。
+    -   **優勢**: 即使工程師在 API 層忘記寫 `where: { tenantId }`，資料庫也會強制過濾，防止資料外洩 (Leakage)。這對醫療個資 (PHI) 至關重要。
+
+### 2. 功能配置 (Configuration)
+-   **方案**: **JSONB Configuration**.
+-   **實作**: 在 `Tenant` 表中增加 `config` (JSONB) 欄位。
+    ```json
+    {
+      "features": {
+        "ai_analysis": true,
+        "line_notification": false
+      },
+      "theme": {
+        "primary_color": "#1e40af"
+      }
+    }
+    ```
+-   **優勢**: 不需要改 Schema 就能靈活開關功能 (Feature Flag)。
+
+### 3. 跨租戶存取 (SuperAdmin Access)
+-   **挑戰**: 平台管理員 (我們) 需要能看所有醫院的 Log，但不能預設看到病患隱私。
+-   **設計**: SuperAdmin 登入後，需選擇 "Impersonate" (扮演) 進入特定 Tenant View 才能看到該院資料，這樣所有的 Access 都會留下 Audit Log。
+
+**[DevOps_Engineer]**:
+-   **Migration**: 使用 Prisma Migrate 管理 RLS Policy script。
+-   **Performance**: `tenantId` 必須建立 Index。
+
+**[Critic]**: 
+⚠️ **提醒**: 前端目前的 `mockData` 結構 (`tenantId` 在 User 身上) 與此架構相符，但需注意 `User` 表本身通常是全域共用的 (Global Users)，或者也是 Tenant-scoped？
+**[SaaS_Architect]**: 建議 `User` 表也是 Tenant-scoped。若一位醫生在兩家醫院兼職，應視為兩個 `User` 實體 (綁定不同 Email 或同 Email 但不同 `UserTenant` mapping)，避免權限混淆。
+
+**[Decision]**: 
+- 確認採用 **PostgreSQL RLS**。
+- 確認採用 **JSONB Config** 控管功能。
+- 確認 **User-Tenant 綁定模式**。
+
+**[User]**: 同意, 不同醫院內流程可能不同, 就原有Demo先設計一標準流程. 按平台架構.
+---
+**[Product_Manager]**: 收到。我們將鎖定 **"Standard Workflow" (標準出院流程)** 進行設計，並確保其架構能支援未來的客製化 (Customization)。
+
+**[SaaS_Architect]**:
+針對「不同醫院、不同流程」的需求，我們的核心設計即為 **WaaSM (Workflow as a State Machine)**。
+1.  **Workflow Definition**: 每個 Tenant 擁有一份或多份 JSON 定義檔。
+2.  **Standard Template**: 系統預設提供一份 "Best Practice" 流程，供新開通醫院直接套用。
+
+**[Proposed Standard Workflow]**:
+1.  **Screening (入院篩檢)**: AI 自動評估風險，決定是否收案。
+2.  **Assessment (跨團隊評估)**: 護理、社工、營養、復健填寫評估表單。
+3.  **Planning (出院計畫)**: 擬定照護目標、衛教指導。
+4.  **Coordination (資源連結)**: 申請長照資源、輔具。
+5.  **Tracking (出院追蹤)**: 電訪或 App 回報。
+
+**[Coder]**: 標準流程實作完成。
+- **Data Definition**: 建立 `standardWorkflow.ts`，定義 5 階段出院流程 (`Screening`, `Assessment`, `Planning`, `Resources`, `Tracking`)。
+- **Dynamic UI**: 重構 `DischargePlanningHub`，現在它會讀取 JSON 設定檔來渲染 Wizard 步驟，而非寫死。
+- **Mock Data Update**: 移除了未使用的變數以修復 Build 錯誤。
+
+**[Critic]**: 驗證建置狀態... `npm run build` 通過 ✅。
+流程引擎已經具備「資料驅動 (Data-driven)」的雛形，這證明了未來不同醫院可以透過 JSON 設定檔擁有完全不同的出院步驟。
+
+
+
+
 
 
 
