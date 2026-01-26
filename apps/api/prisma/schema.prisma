@@ -1,0 +1,234 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --------------------------------------
+// ENUMS (Based on Confirmed Roles)
+// --------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN     // Platform Owner
+  TENANT_ADMIN    // Hospital Admin
+  CASE_MANAGER    // 個管師 (Key User)
+  PHYSICIAN       // 醫師
+  PHARMACIST      // 藥師
+  NURSE           // 護理師
+  THERAPIST       // 復建師
+  NUTRITIONIST    // 營養師
+  SOCIAL_WORKER   // 社工師
+  HEALTH_EDUCATOR // 衛教師
+  PATIENT         // 病患
+  FAMILY          // 家屬
+}
+
+enum SubscriptionTier {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+// --------------------------------------
+// IDENTITY LAYER (Multi-Tenancy)
+// --------------------------------------
+
+// Global User (Identity Provider)
+// 一個使用者可以擁有多個 Hospital 身份
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  fullName      String    @map("full_name")
+  
+  // Profile info
+  phone         String?
+  avatarUrl     String?   @map("avatar_url")
+  
+  // System Metadata
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  memberships   TenantMember[]
+
+  @@map("users")
+}
+
+// Tenant (Hospital/Organization)
+model Tenant {
+  id            String    @id @default(uuid())
+  name          String
+  slug          String    @unique // for subdomain or url path
+  
+  // Subscription
+  tier          SubscriptionTier @default(BASIC)
+  status        TenantStatus     @default(ACTIVE)
+
+  // White-Label Config (Logo, Colors, etc.)
+  config        Json?     // { themeColor: "#0ea5e9", logoUrl: "..." }
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  members       TenantMember[]
+  workflows     WorkflowDefinition[]
+  patients      Patient[]
+  forms         FormDefinition[]
+
+  @@map("tenants")
+}
+
+// The link between User and Tenant
+// This defines "Who are you in THIS hospital?"
+model TenantMember {
+  id            String    @id @default(uuid())
+  
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id])
+  
+  tenantId      String    @map("tenant_id")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  
+  // Role in THIS specific tenant
+  role          UserRole  @default(CASE_MANAGER)
+
+  isActive      Boolean   @default(true) @map("is_active")
+  joinedAt      DateTime  @default(now()) @map("joined_at")
+
+  @@unique([userId, tenantId]) // User can only join a tenant once
+  @@map("tenant_members")
+}
+
+// --------------------------------------
+// WORKFLOW ENGINE (WaaSM)
+// --------------------------------------
+
+// User-Defined Workflow per Tenant
+model WorkflowDefinition {
+  id            String    @id @default(uuid())
+  
+  tenantId      String    @map("tenant_id")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  description   String?
+  
+  // The Graph: Nodes (States) & Edges (Transitions)
+  // Saved as JSON to allow flexible React Flow usage
+  // Structure: { nodes: [...], edges: [...] }
+  definition    Json
+  
+  isPublished   Boolean   @default(false) @map("is_published")
+  version       Int       @default(1)
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  patientCurrentStates Patient[] // Patients currently in this workflow
+
+  @@map("workflow_definitions")
+}
+
+// --------------------------------------
+// CLINICAL DOMAIN
+// --------------------------------------
+
+model Patient {
+  id            String    @id @default(uuid())
+  
+  tenantId      String    @map("tenant_id")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+
+  // Basics
+  mrn           String    // Medical Record Number (Chart No)
+  name          String
+  dob           DateTime? // Date of Birth
+  gender        String?
+  
+  // Workflow State
+  // Points to the Active Workflow and Current Node
+  activeWorkflowId String?   @map("active_workflow_id")
+  activeWorkflow   WorkflowDefinition? @relation(fields: [activeWorkflowId], references: [id])
+  
+  currentStatusNodeId String? @map("current_status_node_id") // ID within the JSON
+
+  // Risk Score (Calculated by AI)
+  riskScore     Float?    @map("risk_score") // 0-100
+  riskLevel     String?   @map("risk_level") // HIGH, MEDIUM, LOW
+
+  // Admission Info
+  admissionDate DateTime  @map("admission_date")
+  dischargeDate DateTime? @map("discharge_date")
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  formSubmissions FormSubmission[]
+
+  @@unique([tenantId, mrn])
+  @@map("patients")
+}
+
+// --------------------------------------
+// DYNAMIC FORMS
+// --------------------------------------
+
+// Form Definition (JSON-based schema)
+model FormDefinition {
+  id            String   @id @default(uuid())
+  
+  tenantId      String   @map("tenant_id")
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  description   String?
+  
+  // JSON Schema defining form fields
+  // { fields: [{ id, type, label, required, options?, validation? }] }
+  definition    Json
+  
+  // Which workflow nodes this form is bound to
+  nodeBindings  String[] @map("node_bindings")
+  
+  isTemplate    Boolean  @default(false) @map("is_template")
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  submissions   FormSubmission[]
+  
+  @@map("form_definitions")
+}
+
+// Form Submission (Patient/Staff submitted data)
+model FormSubmission {
+  id            String   @id @default(uuid())
+  
+  formId        String   @map("form_id")
+  form          FormDefinition @relation(fields: [formId], references: [id])
+  
+  patientId     String   @map("patient_id")
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  
+  submittedById String   @map("submitted_by_id")
+  
+  // The actual submitted data
+  data          Json
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  @@map("form_submissions")
+}

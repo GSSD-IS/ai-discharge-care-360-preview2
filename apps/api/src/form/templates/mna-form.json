@@ -1,0 +1,135 @@
+{
+    "fields": [
+        {
+            "id": "mna_a",
+            "type": "RADIO",
+            "label": "A. 過去三個月內是否因食慾不振、消化問題、咀嚼或吞嚥困難而減少食量?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 食量嚴重減少"
+                },
+                {
+                    "value": "1",
+                    "label": "1 - 食量中度減少"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 食量未減少"
+                }
+            ]
+        },
+        {
+            "id": "mna_b",
+            "type": "RADIO",
+            "label": "B. 過去三個月內體重下降情況?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 體重下降大於 3 公斤"
+                },
+                {
+                    "value": "1",
+                    "label": "1 - 不知道"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 體重下降 1-3 公斤"
+                },
+                {
+                    "value": "3",
+                    "label": "3 - 體重未下降"
+                }
+            ]
+        },
+        {
+            "id": "mna_c",
+            "type": "RADIO",
+            "label": "C. 活動能力?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 需長期臥床或坐輪椅"
+                },
+                {
+                    "value": "1",
+                    "label": "1 - 可下床或離開輪椅，但不能外出"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 可自由活動"
+                }
+            ]
+        },
+        {
+            "id": "mna_d",
+            "type": "RADIO",
+            "label": "D. 過去三個月內是否有受到心理壓力或急性疾病?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 是"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 否"
+                }
+            ]
+        },
+        {
+            "id": "mna_e",
+            "type": "RADIO",
+            "label": "E. 神經心理問題?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 重度失智或憂鬱"
+                },
+                {
+                    "value": "1",
+                    "label": "1 - 輕度失智"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 無神經心理問題"
+                }
+            ]
+        },
+        {
+            "id": "mna_f1",
+            "type": "RADIO",
+            "label": "F1. 身體質量指數 (BMI)?",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - BMI < 19"
+                },
+                {
+                    "value": "1",
+                    "label": "1 - 19 <= BMI < 21"
+                },
+                {
+                    "value": "2",
+                    "label": "2 - 21 <= BMI < 23"
+                },
+                {
+                    "value": "3",
+                    "label": "3 - BMI >= 23"
+                }
+            ]
+        },
+        {
+            "id": "mna_score",
+            "type": "NUMBER",
+            "label": "MNA-SF 總分 (Max 14)",
+            "required": false,
+            "placeholder": "正常:12-14, 風險:8-11, 不良:0-7"
+        }
+    ]
+}

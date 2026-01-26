@@ -1,0 +1,211 @@
+{
+    "fields": [
+        {
+            "id": "q_feeding",
+            "type": "RADIO",
+            "label": "進食",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 完全依賴"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需部分協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可自行進食"
+                }
+            ]
+        },
+        {
+            "id": "q_bathing",
+            "type": "RADIO",
+            "label": "洗澡",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 需要協助"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 可自行洗澡"
+                }
+            ]
+        },
+        {
+            "id": "q_grooming",
+            "type": "RADIO",
+            "label": "個人修飾",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 需要協助"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 可自行完成"
+                }
+            ]
+        },
+        {
+            "id": "q_dressing",
+            "type": "RADIO",
+            "label": "穿衣",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 完全依賴"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需部分協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可自行完成"
+                }
+            ]
+        },
+        {
+            "id": "q_bowels",
+            "type": "RADIO",
+            "label": "大便控制",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 失禁"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 偶爾失禁"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可控制"
+                }
+            ]
+        },
+        {
+            "id": "q_bladder",
+            "type": "RADIO",
+            "label": "小便控制",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 失禁"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 偶爾失禁"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可控制"
+                }
+            ]
+        },
+        {
+            "id": "q_toilet_use",
+            "type": "RADIO",
+            "label": "如廁",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 完全依賴"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需部分協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可自行如廁"
+                }
+            ]
+        },
+        {
+            "id": "q_transfers",
+            "type": "RADIO",
+            "label": "移位 (床-輪椅)",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 完全依賴"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需大量協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 需少量協助"
+                },
+                {
+                    "value": "15",
+                    "label": "15 - 可自行移位"
+                }
+            ]
+        },
+        {
+            "id": "q_mobility",
+            "type": "RADIO",
+            "label": "行走 (平地)",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 無法行走"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需輪椅協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 需助行器協助"
+                },
+                {
+                    "value": "15",
+                    "label": "15 - 可獨立行走"
+                }
+            ]
+        },
+        {
+            "id": "q_stairs",
+            "type": "RADIO",
+            "label": "上下樓梯",
+            "required": true,
+            "options": [
+                {
+                    "value": "0",
+                    "label": "0 - 無法上下樓"
+                },
+                {
+                    "value": "5",
+                    "label": "5 - 需協助"
+                },
+                {
+                    "value": "10",
+                    "label": "10 - 可自行上下樓"
+                }
+            ]
+        },
+        {
+            "id": "total_score",
+            "type": "NUMBER",
+            "label": "總分 (Barthel Index)",
+            "required": false,
+            "placeholder": "請加總上述得分 (0-100)"
+        }
+    ]
+}

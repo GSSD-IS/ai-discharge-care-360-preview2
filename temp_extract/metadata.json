@@ -1,0 +1,8 @@
+{
+  "name": "Copy of AI Discharge Care 360",
+  "description": "An integrated AI-driven medical platform for discharge screening, education, and 30-day follow-up to reduce readmission rates.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

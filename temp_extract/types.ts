@@ -1,0 +1,138 @@
+
+export enum CaseStatus {
+  Screening = '篩檢中',
+  Preparing = '準備中',
+  FollowUp = '追蹤中',
+  Completed = '已結案'
+}
+
+export enum DischargeType {
+  CareHome = '機構轉銜',
+  Home = '返家照護',
+  Transfer = '轉院轉銜'
+}
+
+export enum DepartmentRole {
+  Nurse = '護理',
+  SocialWorker = '社工',
+  Nutritionist = '營養',
+  Physiotherapist = '復健',
+  Pharmacist = '藥劑',
+  Doctor = '醫師'
+}
+
+export enum ResourceCategory {
+  LongTermCare = '長照服務-照管中心',
+  HomeNursing = '居家護理-居家護理所',
+  HomeRespiratory = '居家呼吸4階-居家呼吸治療所',
+  AssistiveTech = '輔具服務-輔具中心',
+  Rehabilitation = '居家復健-復健診所',
+  Other = '其他-聯絡人手動輸入'
+}
+
+export interface MatchedResource {
+  id: string;
+  category: ResourceCategory;
+  name: string;
+  contactPerson: string;
+  phone: string;
+  status: '已聯繫' | '媒合成功' | '待確認';
+  city?: string;
+  note?: string;
+}
+
+export interface PrepItem {
+  label: string;
+  status: string;
+  isCompleted: boolean;
+}
+
+export interface DeptAssessment {
+  role: DepartmentRole;
+  status: '待評估' | '評估中' | '已完成';
+  lastNote: string;
+  updatedAt: string;
+}
+
+export interface CoordinationTask {
+  id: string;
+  patientId: string;
+  patientName: string;
+  bed: string;
+  dept: DepartmentRole;
+  title: string;
+  priority: 'High' | 'Medium' | 'Low';
+  deadline: string;
+  status: 'Pending' | 'Ongoing' | 'Done';
+}
+
+export interface Patient {
+  id: string;
+  name: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  department: string;
+  bed: string;
+  riskScore: number;
+  status: CaseStatus;
+  admissionDate: string;
+  expectedDischargeDate: string;
+  cci: number;
+  adl: number;
+  dischargeType?: DischargeType;
+  prepItems?: PrepItem[];
+  assessments?: DeptAssessment[];
+  preAdmissionResources?: string[];
+  matchedResources?: MatchedResource[];
+  primaryCaregiver?: string;
+  primaryContact?: string;
+}
+
+export interface FollowUpRecord {
+  patientId: string;
+  callDate: string;
+  responder: string;
+  recentVisit?: {
+    type: 'ER' | 'OPD';
+    date: string;
+    details: string;
+  };
+  qa: { question: string; answer: string; details: string }[];
+  summaryNote: string;
+}
+
+export interface ResourceItem {
+  id: string;
+  category: string;
+  name: string;
+  address: string;
+  phone: string;
+  tags: string[];
+  type: 'Institution' | 'Home';
+}
+
+export interface EducationContent {
+  id: string;
+  category: 'Wound' | 'Nasogastric' | 'Nutrition' | 'Activity' | 'Other';
+  title: string;
+  text: string;
+  videoUrl?: string;
+  isAiGenerated: boolean;
+}
+
+export interface Message {
+  id: string;
+  sender: string;
+  role: string;
+  dept: DepartmentRole;
+  content: string;
+  timestamp: string;
+}
+
+export interface EducationModule {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  type: 'Video' | 'Document';
+}

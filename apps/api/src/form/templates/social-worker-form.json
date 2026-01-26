@@ -1,0 +1,102 @@
+{
+    "fields": [
+        {
+            "id": "sw_living_status",
+            "type": "RADIO",
+            "label": "居住狀況",
+            "required": true,
+            "options": [
+                {
+                    "value": "alone",
+                    "label": "獨居"
+                },
+                {
+                    "value": "family",
+                    "label": "與家人同住"
+                },
+                {
+                    "value": "institution",
+                    "label": "機構安置"
+                }
+            ]
+        },
+        {
+            "id": "sw_caregiver",
+            "type": "RADIO",
+            "label": "主要照顧者",
+            "required": true,
+            "options": [
+                {
+                    "value": "spouse",
+                    "label": "配偶"
+                },
+                {
+                    "value": "children",
+                    "label": "子女"
+                },
+                {
+                    "value": "worker",
+                    "label": "看護"
+                },
+                {
+                    "value": "none",
+                    "label": "無"
+                }
+            ]
+        },
+        {
+            "id": "sw_financial",
+            "type": "SELECT",
+            "label": "經濟狀況",
+            "required": true,
+            "options": [
+                {
+                    "value": "normal",
+                    "label": "一般"
+                },
+                {
+                    "value": "low_income",
+                    "label": "低收入戶"
+                },
+                {
+                    "value": "mid_low",
+                    "label": "中低收入戶"
+                },
+                {
+                    "value": "hardship",
+                    "label": "清寒"
+                }
+            ]
+        },
+        {
+            "id": "sw_needs",
+            "type": "CHECKBOX",
+            "label": "需求評估",
+            "required": false,
+            "options": [
+                {
+                    "value": "long_term_care",
+                    "label": "長照資源"
+                },
+                {
+                    "value": "assistive_device",
+                    "label": "輔具申請"
+                },
+                {
+                    "value": "financial_aid",
+                    "label": "經濟補助"
+                },
+                {
+                    "value": "rehab_bus",
+                    "label": "復康巴士"
+                }
+            ]
+        },
+        {
+            "id": "sw_notes",
+            "type": "TEXTAREA",
+            "label": "社工訪談紀錄",
+            "required": true
+        }
+    ]
+}
