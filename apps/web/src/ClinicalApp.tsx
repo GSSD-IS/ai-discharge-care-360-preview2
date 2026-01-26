@@ -77,15 +77,15 @@ const ClinicalApp: React.FC = () => {
         <nav className="flex-1 p-4 space-y-2">
           {[
             { id: 'dashboard', label: '總覽儀表板', icon: 'fa-chart-pie' },
-            { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-doctor-message' },
+            { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-md' },
             { id: 'detail', label: '個案進度詳情', icon: 'fa-file-medical-alt' },
-            { id: 'team', label: '病房協作平台', icon: 'fa-users-medical' },
-            { id: 'planning', label: '出院計畫擬定', icon: 'fa-clipboard-list-check' },
-            { id: 'followup', label: '追蹤與再入院', icon: 'fa-phone-volume' },
-            { id: 'analytics', label: '數據決策中心', icon: 'fa-chart-network' },
-            { id: 'claims', label: '申報作業 (Claims)', icon: 'fa-file-invoice-dollar' },
-            { id: 'monitor', label: '臨床監測 (Monitor)', icon: 'fa-heart-pulse' },
-            { id: 'portal', label: '家屬端預覽', icon: 'fa-mobile-screen' }
+            { id: 'team', label: '病房協作平台', icon: 'fa-user-nurse' },
+            { id: 'planning', label: '出院計畫擬定', icon: 'fa-clipboard-list' },
+            { id: 'followup', label: '追蹤與再入院', icon: 'fa-phone' },
+            { id: 'analytics', label: '數據決策中心', icon: 'fa-chart-line' },
+            { id: 'claims', label: '申報作業 (Claims)', icon: 'fa-file-invoice' },
+            { id: 'monitor', label: '臨床監測 (Monitor)', icon: 'fa-heartbeat' },
+            { id: 'portal', label: '家屬端預覽', icon: 'fa-mobile' }
           ].map(item => (
             <button
               key={item.id}
