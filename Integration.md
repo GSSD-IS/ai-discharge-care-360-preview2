@@ -411,7 +411,18 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 -   `git push` to `main` with commit `feat: Implement all Demo Pages...`
 -   `task.md` synchronized (All phases marked [x]).
 
-**[System]**: All tasks in `task.md` are completed. Ready for Final Review.`, `NewCaseModal`.
+**[System]**: All tasks in `task.md` are completed. Ready for Final Review.
+**[System]**: Visual assets verified. Ready.
+
+**[User]**: 左邊的功能列表頁面, 改用可折疊方式. 不然佔太大頁面
+---
+**[UI_Designer]**: 收到。側邊欄 (Sidebar) 目前寬度固定為 `w-64` (256px)，在小螢幕或內容展示區時確實占用過多空間。
+**[Action]**: 將 `ClinicalApp` 的側邊欄重構為 **Collapsible (可折疊)** 模式。
+-   **State**: 新增展開/收合狀態切換。
+-   **Width**: 展開 `256px` <-> 收合 `80px` (icon only).
+-   **UX**: 收合時隱藏文字，僅顯示圖示；滑鼠 hover 時顯示 Tooltip (或保持精簡)。
+
+**[Frontend_Engineer]**: 開始修改 `ClinicalApp.tsx`。`, `NewCaseModal`.
 > *   **輔助組件**: `RiskRadar` (圖表相依於 Recharts).
 > *   **資料層**: 建立 `mockPatients.ts` 模擬真實臨床數據。
 > *   **入口整合**: 更新 `App.tsx` 與 `index.css`，實現側邊欄導航與組件路由。

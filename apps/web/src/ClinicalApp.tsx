@@ -16,6 +16,7 @@ import { type Patient } from './types/template';
 
 const ClinicalApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [patients, setPatients] = useState<Patient[]>(initialPatients);
   const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
   const [showNewCaseModal, setShowNewCaseModal] = useState(false);
@@ -65,16 +66,31 @@ const ClinicalApp: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex text-slate-900 font-sans">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out">
-        <div className="p-6 border-b border-slate-700/50">
-          <h1 className="text-xl font-black tracking-tighter flex items-center gap-2">
-            <span className="text-2xl text-sky-500"><i className="fas fa-hospital-user"></i></span>
-            AI Discharge 360
-          </h1>
-          <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Smart Care Transition</p>
+      <aside className={`bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${activeTab === 'portal' ? 'w-0 overflow-hidden' : (isCollapsed ? 'w-20' : 'w-64')}`}>
+        <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
+          {!isCollapsed && (
+            <div>
+              <h1 className="text-xl font-black tracking-tighter flex items-center gap-2">
+                <span className="text-xl text-sky-500"><i className="fas fa-hospital-user"></i></span>
+                <span className="truncate">Care 360</span>
+              </h1>
+              <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold truncate">Smart Care Transition</p>
+            </div>
+          )}
+          {isCollapsed && (
+            <div className="w-full flex justify-center">
+              <span className="text-2xl text-sky-500"><i className="fas fa-hospital-user"></i></span>
+            </div>
+          )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={`text-slate-400 hover:text-white transition ${isCollapsed ? 'absolute -right-3 top-6 bg-slate-800 rounded-full w-6 h-6 flex items-center justify-center border border-slate-600 shadow-lg' : ''}`}
+          >
+            <i className={`fas ${isCollapsed ? 'fa-chevron-right text-xs' : 'fa-bars'}`}></i>
+          </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-hide">
           {[
             { id: 'dashboard', label: '總覽儀表板', icon: 'fa-chart-pie' },
             { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-md' },
@@ -90,35 +106,40 @@ const ClinicalApp: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group relative overflow-hidden ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+              title={isCollapsed ? item.label : ''}
+              className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
             >
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-white/20' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
                 <i className={`fas ${item.icon} text-sm`}></i>
               </div>
-              <span className="text-xs font-bold tracking-wide">{item.label}</span>
+              {!isCollapsed && <span className="text-xs font-bold tracking-wide truncate">{item.label}</span>}
               {activeTab === item.id && <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-400"></div>}
             </button>
           ))}
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <div className="bg-slate-800 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 p-0.5">
-              <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center text-xs font-black text-white">
+          <div className={`bg-slate-800 rounded-xl p-3 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 p-0.5 flex-shrink-0">
+              <div className="w-full h-full bg-slate-900 rounded-full flex items-center justify-center text-[10px] font-black text-white">
                 RN
               </div>
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">陳護理長</p>
-              <p className="text-[10px] text-slate-400">7A 病房 - 胸腔內科</p>
-            </div>
+            {!isCollapsed && (
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-white truncate">陳護理長</p>
+                <p className="text-[10px] text-slate-400 truncate">7A 病房</p>
+              </div>
+            )}
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-64 p-6 overflow-x-hidden">
-        {renderContent()}
+      <main className={`flex-1 p-6 overflow-x-hidden transition-all duration-300 ${activeTab === 'portal' ? 'ml-0' : (isCollapsed ? 'ml-20' : 'ml-64')}`}>
+        <div className="max-w-7xl mx-auto">
+          {renderContent()}
+        </div>
       </main>
 
       {/* Modals */}
