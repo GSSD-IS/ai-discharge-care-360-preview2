@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type Patient, type Message, DepartmentRole } from '../../types/template';
-import { generateDischargeSummary } from '../../services/geminiService';
+import { generateDischargeSummary, assessRiskAI } from '../../services/geminiService';
 import RiskRadar from './RiskRadar';
 
 interface CaseDetailProps {
@@ -10,9 +10,12 @@ interface CaseDetailProps {
 
 const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
     const [aiSummary, setAiSummary] = useState<string>('');
+    const [riskResult, setRiskResult] = useState<{ riskLevel: string; score: number; reasoning: string } | null>(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<'All' | DepartmentRole>(DepartmentRole.Nurse);
+    // ...
     const [messages, setMessages] = useState<Message[]>([
+        // ... (keep messages default state)
         { id: '1', sender: '蔡社工', role: 'Social Worker', dept: DepartmentRole.SocialWorker, content: '患者家屬表示希望申請輔具，已聯繫長照中心。', timestamp: '2023-11-23 14:20' },
         { id: '2', sender: '你', role: 'Nurse', dept: DepartmentRole.Nurse, content: '收到。目前個案安全用藥教育已開始，重點放在減少跌倒風險。', timestamp: '2023-11-23 15:10' },
         { id: '3', sender: '王藥師', role: 'Pharmacist', dept: DepartmentRole.Pharmacist, content: '已核對三高藥物清單，提醒病患 Warfarin 需注意交互作用。', timestamp: '2023-11-23 16:45' },
@@ -20,18 +23,25 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
     ]);
     const [newMessage, setNewMessage] = useState('');
 
+    const currentRiskScore = riskResult ? riskResult.score : patient.riskScore;
+
     const riskData = [
+        { subject: '總體風險', A: currentRiskScore, fullMark: 100 },
         { subject: '高齡', A: patient.age > 75 ? 90 : 40, fullMark: 100 },
         { subject: '失能', A: patient.adl < 50 ? 80 : 20, fullMark: 100 },
         { subject: '共病', A: patient.cci * 10, fullMark: 100 },
-        { subject: '社會支持', A: 50, fullMark: 100 },
-        { subject: '認知功能', A: 30, fullMark: 100 },
+        { subject: '認知', A: 30, fullMark: 100 },
     ];
 
     const handleGenerateSummary = async () => {
         setLoading(true);
-        const summary = await generateDischargeSummary(patient);
+        // Parallel execution
+        const [summary, risk] = await Promise.all([
+            generateDischargeSummary(patient),
+            assessRiskAI(patient)
+        ]);
         setAiSummary(summary);
+        setRiskResult(risk);
         setLoading(false);
     };
 
@@ -346,9 +356,12 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
 
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h3 className="font-bold text-slate-800 mb-4 text-center">30 天再入院風險</h3>
-                        <div className={`p-3 rounded-xl flex items-center gap-3 mb-6 border ${patient.riskScore >= 70 ? 'bg-red-50 border-red-100 text-red-700' : 'bg-green-50 border-green-100 text-green-700'}`}>
-                            <i className={`fas ${patient.riskScore >= 70 ? 'fa-exclamation-triangle' : 'fa-shield-check'}`}></i>
-                            <span className="text-xs font-black uppercase">風險評分: {patient.riskScore}分</span>
+                        <div className={`p-3 rounded-xl flex items-center justify-between gap-3 mb-6 border ${currentRiskScore >= 70 ? 'bg-red-50 border-red-100 text-red-700' : 'bg-green-50 border-green-100 text-green-700'}`}>
+                            <div className="flex items-center gap-2">
+                                <i className={`fas ${currentRiskScore >= 70 ? 'fa-exclamation-triangle' : 'fa-shield-check'}`}></i>
+                                <span className="text-xs font-black uppercase">風險評分: {currentRiskScore}分</span>
+                            </div>
+                            {riskResult && <span className="text-[9px] bg-white/50 px-2 py-0.5 rounded font-black border border-white/20">AI Calculated</span>}
                         </div>
                         <RiskRadar data={riskData} />
                     </div>

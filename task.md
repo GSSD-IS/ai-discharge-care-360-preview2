@@ -48,6 +48,22 @@
     - [x] 建立動態 Kanban 看板組件.
     - [x] 實作病患卡片與 "必經未完成" 警示.
 
+## Phase 4: AI 智慧核心 (AI Intelligence Core)
+- [x] **4.1 Gemini 服務整合** <!-- id: 4.1 -->
+    - [x] 安裝 `@google/generative-ai` 套件.
+    - [x] 建立 `AiModule` 與 `GeminiService` (NestJS).
+    - [x] 實作 Prompt Template 管理機制.
+
+- [x] **4.2 智慧出院計畫** <!-- id: 4.2 -->
+    - [x] 實作 `POST /api/ai/discharge-plan`.
+    - [x] 前端 `DischargePlanningHub` 串接 AI 生成 API.
+    - [x] 支援 "Regenerate" (重新生成) 功能.
+
+- [x] **4.3 風險評估模型** <!-- id: 4.3 -->
+    - [x] 實作 `POST /api/ai/risk-assessment`.
+    - [x] 基於病患特徵 (Age, ADL, Comorbidities) 生成風險報告.
+
+
 ## Phase 5: SaaS 架構與部署 (SaaS Architecture & Deployment)
 - [x] **5.1 登入與認證 (前端 Mock)** <!-- id: 5.1 -->
     - [x] 實作登入頁面 (支援白牌化).

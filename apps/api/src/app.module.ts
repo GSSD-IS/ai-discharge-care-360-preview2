@@ -6,9 +6,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { WorkflowModule } from './workflow/workflow.module';
 import { FormModule } from './form/form.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, WorkflowModule, FormModule, DashboardModule],
+  imports: [PrismaModule, AuthModule, WorkflowModule, FormModule, DashboardModule, AiModule],
   controllers: [AppController],
   providers: [AppService],
 })

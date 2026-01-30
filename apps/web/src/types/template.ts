@@ -81,6 +81,7 @@ export interface Patient {
     gender: 'Male' | 'Female';
     department: string;
     bed: string;
+    diagnosis?: string;
     riskScore: number;
     status: CaseStatus;
     admissionDate: string;

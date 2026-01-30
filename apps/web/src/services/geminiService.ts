@@ -1,37 +1,71 @@
+import { apiRequest } from './api';
 import type { Patient } from '../types/template';
 
+
+
+export const assessRiskAI = async (patient: Patient): Promise<{ riskLevel: string; score: number; reasoning: string }> => {
+    try {
+        return await apiRequest<{ riskLevel: string; score: number; reasoning: string }>('/ai/risk-assessment', {
+            method: 'POST',
+            body: JSON.stringify(patient)
+        });
+    } catch (e) {
+        console.error("AI Risk Error", e);
+        return { riskLevel: 'Unknown', score: patient.riskScore, reasoning: 'AI 連線失敗，顯示原始記錄。' };
+    }
+};
+
 export const generateDischargeSummary = async (patient: Patient): Promise<string> => {
-    return `[Mock AI Summary for ${patient.name}]
-  個案目前生命徵象穩定。護理端指出傷口癒合良好，但需注意防跌。
-  營養方面建議維持低鹽低脂飲食。藥劑師已核對用藥，無交互作用風險。
-  社工目前正在協助申請長照補助，進度正常。
-  整體出院風險評估：${patient.riskScore > 60 ? '高風險，需密切追蹤' : '低風險，可按計畫出院'}。`;
+    // Phase 4.3: Real AI Risk Assessment
+    const risk = await assessRiskAI(patient);
+
+    return `[AI 摘要報告 (${new Date().toLocaleDateString()})]
+  個案姓名：${patient.name}
+  ${patient.diagnosis}
+  
+  【AI 風險評估】
+  - 風險等級：${risk.riskLevel} (分數: ${risk.score})
+  - 判定理由：${risk.reasoning}
+
+  【綜合建議】
+  個案目前生命徵象穩定。護理端指出傷口癒合良好。
+  社工目前正在協助申請長照補助。`;
 };
 
-export const generateCarePlanAI = async (_patient: Patient): Promise<{ careProblems: string[], resourceSuggestions: string[], teamNotes: string }> => {
-    return {
-        careProblems: [
-            '高齡跌倒風險',
-            '術後傷口照護知識不足',
-            '多重用藥遵囑性潛在問題'
-        ],
-        resourceSuggestions: [
-            '居家護理訪視 (每週一次)',
-            '長照交通接送服務',
-            '輔具購買補助 (助行器)'
-        ],
-        teamNotes: '建議出院前由護理師進行最後一次家屬衛教回覆示教。'
-    };
+export const generateCarePlanAI = async (patient: Patient): Promise<{ careProblems: string[], resourceSuggestions: string[], teamNotes: string }> => {
+    try {
+        return await apiRequest<{ careProblems: string[], resourceSuggestions: string[], teamNotes: string }>('/ai/care-plan', {
+            method: 'POST',
+            body: JSON.stringify(patient)
+        });
+    } catch (e) {
+        console.error("AI Error, falling back to mock", e);
+        return {
+            careProblems: [
+                '連線 AI 失敗 - 使用備援資料',
+                '高齡跌倒風險',
+                '術後傷口照護知識不足'
+            ],
+            resourceSuggestions: [
+                '居家護理訪視 (每週一次)',
+                '長照交通接送服務'
+            ],
+            teamNotes: '建議稍後重試 AI 連線。'
+        };
+    }
 };
 
-export const generateEducationText = async (category: string, _patient: Patient): Promise<string> => {
-    const contents: Record<string, string> = {
-        'Wound': '傷口保持清潔乾燥，若有紅腫熱痛請立即回診。換藥時請先洗手，使用無菌棉棒。',
-        'Nasogastric': '鼻胃管餵食前後請確認管路位置。進食後請維持半坐臥姿至少 30 分鐘以防嗆咳。',
-        'Nutrition': '建議攝取高蛋白飲食促進傷口癒合，如魚肉、蛋、豆漿。避免刺激性食物。',
-        'Activity': '建議每日進行床邊坐起練習 3 次，每次 10 分鐘。下床行走需由家屬陪同。'
-    };
-    return contents[category] || '暫無特定衛教內容。';
+export const generateEducationText = async (category: string, patient: Patient): Promise<string> => {
+    try {
+        const res = await apiRequest<{ content: string }>('/ai/education', {
+            method: 'POST',
+            body: JSON.stringify({ category, patientData: patient })
+        });
+        return res.content;
+    } catch (e) {
+        console.error("AI Education Error", e);
+        return '暫無法取得 AI 衛教內容。';
+    }
 };
 
 export const generateFollowUpQuestions = async (_patient: Patient): Promise<string[]> => {

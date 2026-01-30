@@ -722,3 +722,59 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 - **Conclusion**: No further edits needed for `task.md` at this moment.
 
 **[System]**: Ready for next phase (Likely Phase 5.5 RBAC or 9.4 Claims).
+
+**[User]**: 完成所有 Demo 頁面 (Claims, Monitor, Workspace, Patient Portal) 並實作可折疊側邊欄
+---
+**[Coder]**: 
+1.  實作所有剩餘頁面: 
+    - Patient Portal (Home, MyPlan, Education)
+    - Claims Dashboard
+    - Clinical Monitor (Vital Signs Simulation)
+    - Physician Workspace (Dashboard)
+    - Admin RBAC Settings
+2.  更新 `ClinicalApp.tsx` 實作 `isCollapsed` 狀態與 UI 調整。
+3.  修復 Icon 顯示問題 (FontAwesome Free)。
+
+**[System]**: 建置測試 (Build Test)
+- Command: `npm run build`
+- Result: **PASS** (11.40s)
+
+**[Action]**: Git Push
+- Added all files.
+- Committed: "feat: complete demo pages and add collapsible sidebar"
+- Pushed to `main`.
+
+**[Status]**: **TERMINATE** - 核心 Demo 功能與頁面全數完成並已發布。
+
+
+> **[User]**: Continue
+> ---
+> **[Product_Manager]**: 收到。檢視任務清單，Phase 9.4 (Claims) 與 Phase 6, 7 皆已完成。唯獨 **Phase 4 (AI Intelligence Core)** 先前被暫緩。
+>
+> 既然 Demo 介面已完善，現在是注入「靈魂」的最佳時機。我提議立即啟動 **Phase 4: AI 智慧核心**。
+> 
+> **[AI_Clinical_Lead]**: 太好了。我們有名為 AI Discharge Care 360，但目前 AI 功能仍是 Mock。
+> 目標：讓 DischargePlanningHub 的「AI 自動撰寫」按鈕真正運作。
+> 
+> **[SaaS_Architect]**: 技術方案如下：
+> 1.  **Backend (pps/api)**: 安裝 @google/generative-ai SDK。
+> 2.  **Service**: 實作 GeminiService，並將 API Key (AIzaSy...) 安全注入 (使用 Env Var)。
+> 3.  **Prompt Engineering**: 設計專用的 System Prompt，確保生成的衛教內容符合台灣醫療情境 (繁體中文, 溫馨語氣)。
+> 
+> **[Coder]**: 準備就緒。將優先實作 Phase 4.1 與 4.2。
+> 
+> 請確認是否執行？
+
+
+> **[System]**: Phase 4.1 & 4.2 已完成並通過建置測試。
+> 
+> **[Analysis]**: 
+> - 後端 GeminiService 已成功串接 gemini-pro 模型。
+> - 前端 DischargePlanningHub 已可呼叫 API 生成出院計畫與衛教文章。
+> 
+> **[Next Step]**: 啟動 **Phase 4.3 風險評估模型 (Risk Assessment Model)**。
+> 目標是讓 AI 根據病患特徵 (年齡, 共病, ADL) 計算再入院風險分數，取代原本的隨機 Mock 數據。
+> 
+> **[Action Plan]**:
+> 1. 後端新增 POST /api/ai/risk-assessment。
+> 2. 前端 CaseDetail 整合 AI 風險分析功能。
