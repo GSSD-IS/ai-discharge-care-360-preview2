@@ -818,3 +818,15 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Result]**: 通過 UI Build 驗證。
 > 
 > **[Action]**: 部署更新 eat: UI refresh for CaseDetail matching pic1.png。
+
+
+> **[Security_Architect]**: 已實作前端角色權限控制 (Frontend RBAC)。
+> 
+> **[Change Log]**:
+> 1. **Role Switcher**: 左下角新增角色切換功能 (醫師/護理師)。
+> 2. **Navigation Filtering**: 依據角色過濾選單，護理師無法看見「醫師決策 (Workspace)」與「申報作業 (Claims)」。
+> 3. **Access Guard**: 增加內容渲染層級的權限檢查，防止透過 URL 存取。
+> 
+> **[Result]**: 通過 Build 驗證。
+> 
+> **[Action]**: 部署更新 eat: Frontend RBAC implementation。
