@@ -66,7 +66,7 @@ const ClinicalApp: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex text-slate-900 font-sans">
       {/* Sidebar Navigation */}
-      <aside className={`bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${activeTab === 'portal' ? 'w-0 overflow-hidden' : (isCollapsed ? 'w-20' : 'w-64')}`}>
+      <aside className={`bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'}`}>
         <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
           {!isCollapsed && (
             <div>
@@ -136,7 +136,7 @@ const ClinicalApp: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className={`flex-1 p-6 overflow-x-hidden transition-all duration-300 ${activeTab === 'portal' ? 'ml-0' : (isCollapsed ? 'ml-20' : 'ml-64')}`}>
+      <main className={`flex-1 p-6 overflow-x-hidden transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <div className="max-w-7xl mx-auto">
           {renderContent()}
         </div>

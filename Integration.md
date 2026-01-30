@@ -778,3 +778,12 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Action Plan]**:
 > 1. 後端新增 POST /api/ai/risk-assessment。
 > 2. 前端 CaseDetail 整合 AI 風險分析功能。
+
+
+> **[User]**: 預覽家屬端畫面時, 左方的功能頁面消失.
+> ---
+> **[UI_UX_Designer]**: 感謝回報。這原本是為了讓家屬端畫面能「滿版模擬」手機體驗而刻意設計的，但確實造成臨床人員無法導航回其他頁面的困擾。
+> 
+> **[Fix]**: 已移除 ClinicalApp.tsx 中針對 portal 頁面的強制隱藏側邊欄邏輯。現在進入「家屬端預覽」時，左側 Sidebar 仍會保留 (預設狀態)，您可以自由切換或折疊。
+> 
+> **[Action]**: 執行修復部署 Commit: ix: Keep sidebar visible in Patient Portal preview。
