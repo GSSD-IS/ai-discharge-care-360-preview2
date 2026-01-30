@@ -787,3 +787,34 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Fix]**: 已移除 ClinicalApp.tsx 中針對 portal 頁面的強制隱藏側邊欄邏輯。現在進入「家屬端預覽」時，左側 Sidebar 仍會保留 (預設狀態)，您可以自由切換或折疊。
 > 
 > **[Action]**: 執行修復部署 Commit: ix: Keep sidebar visible in Patient Portal preview。
+
+
+> **[User]**: D:\AI\AI Discharge Care 360 Autogen\pic1.png 個案準備進度詳情改成這個風格
+> ---
+> **[UI_UX_Designer]**: 收到設計圖 pic1.png。這是一個更現代、資訊分層更清晰的介面。
+> 
+> **[Design Analysis]**:
+> - **Layout**: 三欄式佈局 (左: 里程碑+風險 / 中: 團隊溝通 / 右: AI 衛教生成)。
+> - **Right Column**: 與目前的「AI 摘要 + 雷達圖」不同，新設計強調「卡片式衛教內容」與「回診提醒」。
+> - **Left Column**: 將「AI 風險預警」移至左側底部，強調嚴重性。
+> 
+> **[Refactor Plan]**:
+> 1. **移除 RiskRadar**: 依據設計圖移除雷達圖，改為強調右側的 AI 衛教卡片。
+> 2. **重構 Right Column**: 實作「藥物使用」、「居家照護」、「回診提醒」三張卡片樣式。
+> 3. **重構 Left Column**: 優化時間軸樣式，加入底部風險警示塊。
+> 4. **優化 Chat UI**: 簡化 Tabs，強調對話流體驗。
+> 
+> **[Coder]**: 準備執行 UI 重構。
+
+
+> **[UI_UX_Designer]**: 個案詳情頁面 (CaseDetail) 已參照 pic1.png 完成樣式重構。
+> 
+> **[Change Log]**:
+> 1. **Layout**: 採用三欄式 (里程碑 / 團隊溝通 / AI 衛教)。
+> 2. **Header**: 新增 Inpatient 標籤，優化按鈕樣式，增加返回導航。
+> 3. **Left Column**: 優化時間軸樣式，將「AI 風險預警」移至底部強調。
+> 4. **Right Column**: 移除雷達圖，改為「AI 衛教生成」卡片 (藥物、居護、回診)。
+> 
+> **[Result]**: 通過 UI Build 驗證。
+> 
+> **[Action]**: 部署更新 eat: UI refresh for CaseDetail matching pic1.png。
