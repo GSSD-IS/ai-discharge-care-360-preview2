@@ -225,5 +225,12 @@ export const mockUsers: User[] = [
         name: '陳專員',
         role: UserRole.Nurse,
         tenantId: 't2'
+    },
+    {
+        id: 'u5',
+        email: 'dr@ntuh.com',
+        name: '王醫師',
+        role: UserRole.Doctor,
+        tenantId: 't1'
     }
 ];

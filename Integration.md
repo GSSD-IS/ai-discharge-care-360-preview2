@@ -830,3 +830,16 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Result]**: 通過 Build 驗證。
 > 
 > **[Action]**: 部署更新 eat: Frontend RBAC implementation。
+
+
+> **[UI_UX_Designer]**: 依據您的反饋，已將角色區分機制移至登入頁面 (Login Page)。
+> 
+> **[Change Log]**:
+> 1. **Login Page**: 新增「醫師 (Doctor)」登入選項 (Mock Credential: dr@ntuh.com)。
+> 2. **Authentication**: 登入時將角色資訊寫入 localStorage。
+> 3. **ClinicalApp**: 初始化時讀取 localStorage 中的角色，移除側邊欄切換器。
+> 4. **RBAC Logic**: 維持既有過濾邏輯，醫師可存取所有頁面，護理師隱藏 Workspace/Claims。
+> 
+> **[Result]**: 通過 Build 驗證。
+> 
+> **[Action]**: 部署更新 efactor: Move RBAC selection to Login Page。

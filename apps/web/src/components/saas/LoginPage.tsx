@@ -83,6 +83,7 @@ const LoginPage: React.FC = () => {
                         <p className="text-xs text-center text-slate-400 mb-4">測試帳號 (Mock Credentials):</p>
                         <div className="flex gap-2 justify-center flex-wrap">
                             <button onClick={() => { setEmail('nurse@ntuh.com'); setPassword('123'); }} className="px-3 py-1 bg-slate-100 rounded text-xs text-slate-600">護理師 (Nurse)</button>
+                            <button onClick={() => { setEmail('dr@ntuh.com'); setPassword('123'); }} className="px-3 py-1 bg-slate-100 rounded text-xs text-slate-600">醫師 (Doctor)</button>
                             <button onClick={() => { setEmail('admin@care360.com'); setPassword('123'); }} className="px-3 py-1 bg-slate-100 rounded text-xs text-slate-600">管理員 (Admin)</button>
                         </div>
                         <div className="mt-4 text-center">
