@@ -96,6 +96,20 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
         setMessages(prev => [...prev, sysMsg]);
     };
 
+    const sendMessage = () => {
+        if (!newMessage.trim()) return;
+        const msg: Message = {
+            id: Date.now().toString(),
+            sender: '你',
+            role: '專責護理',
+            dept: DepartmentRole.Nurse,
+            content: newMessage,
+            timestamp: new Date().toLocaleString()
+        };
+        setMessages(prev => [...prev, msg]);
+        setNewMessage('');
+    };
+
     const currentRiskScore = patient.riskScore;
 
     const sendMessage = () => {
