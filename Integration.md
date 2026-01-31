@@ -1064,6 +1064,37 @@ efactor: Move RBAC selection to Login Page。
 >   - 點擊「+」新增任務。
 >   - 點擊任務卡片進行編輯/完成。
 >
-> 請問此設計方向是否準確？
+
+>
+> **[Antigravity]**: (自動執行) 根據專家規劃，已完成「待辦事項總覽」功能開發。
+>
+> **[Status]**: Dashboard To-Do List Integration Completed.
+> - **[UI Update]**:
+>   - **移除**: `AI 資源媒合決策中心` 與舊版 `跨領域會議` 表格。
+>   - **新增**: `待辦事項總覽` (To-Do List) 區塊。
+> - **[Feature]**:
+>   - **新增/編輯**: 支援標題、日期、時間、地點、對象、優先級。
+>   - **列表管理**: 依 時間 排序，支援勾選完成狀態。
+> - **[Deployment]**: Code pushed to `main` (Context: `3298440`). Build verified.
+>
+> **[User]**: 部屬好了嗎
+>
+> **[Antigravity]**: 部署程序確認已完成。所有改動已推送至遠端。
+>
+> **[User]**: 你是一位專業的資深 UI/UX 設計師，擅長極簡主義與數據視覺化。任務： 請重新設計這個 APP 面板。核心要求：保留所有資訊... Bento Grid 風格... 視覺降噪... 層級分明...
+>
+> **[Antigravity]**: 收到「UI/UX 重大改版」需求。根據 **[啟動期領域討論]** 規則，針對此「極簡主義 Bento Grid 設計」場景，建議啟動以下專家：
+> 1. **UI_UX_Designer (介面設計師)**: 負責 Bento Grid 佈局規劃 (大小卡片配置)、色彩計畫 (微漸層/單色) 與字體層級設計。
+> 2. **Frontend_Architect (前端架構師)**: 評估 Tailwind CSS Grid 實作方案 (`grid-template-areas` vs `col-span`)，確保響應式效果。
+>
+> **[確認事項]**: 您提到的「保留所有資訊」，我將以目前 Dashboard 上的：
+> 1. **數據卡片** (病患總數、待出院、平均住院天數)
+> 2. **病患列表** (含資源標籤)
+> 3. **待辦事項清單** (To-Do List)
+> 4. **圓餅圖** (安置分佈)
+> 作為基礎進行重組。請問是否正確？且是否同意啟動專家？
+
+
+
 
 
