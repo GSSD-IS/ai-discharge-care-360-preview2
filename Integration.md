@@ -911,3 +911,27 @@ efactor: Move RBAC selection to Login Page。
 > 3. Output: Added `Print` and `Send to App` features in S4.
 > 
 > **[Status]**: Feature "Comprehensive Plan Generation" Completed.
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 程式碼已推送至 GitHub，觸發 Vercel 自動部署。
+>
+> **[DevOps]**:
+> - **Git Status**: Clean, up to date with `origin/main`.
+> **[DevOps]**:
+> - **Git Status**: Clean, up to date with `origin/main`.
+> - **Deployment**: Triggered via push.
+
+> **[User]**: 基本資料與安置方向放在最上面。安置方向選擇的結果呈現在總儀表板上。
+> ---
+> **[Antigravity]**: 收到。將進行惠面微調，提升資料可視性。
+>
+> **[Planner]**:
+> 1.  **DischargePlanningHub**: 將「基本資料與安置方向」區塊移至內容區域的最頂端 (Persistent Header)，使其在各流程步驟中皆可做為參考。
+> **[Antigravity]**: 介面優化完成。
+>
+> **[Coder]**: 
+> 1. Refactor: Moved `DischargePlacementForm` to a persistent header in `DischargePlanningHub`, ensuring context visibility across all steps.
+> 2. UI: Enhanced `Dashboard` patient cards to show detailed placement info (Caregiver type, Facility name).
+> 
+> **[Status]**: Feature "Placement UI Refinement" Completed.

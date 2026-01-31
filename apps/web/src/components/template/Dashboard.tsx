@@ -192,31 +192,33 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
 
                                     {getPrepSummary(p)}
 
-                                    {/* Discharge Placement Summary */}
                                     {p.dischargePlacement && (
-                                        <div className="mb-3 pt-3 border-t border-slate-50 flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5">
-                                                <i className="fas fa-map-signs text-slate-400 text-xs"></i>
-                                                <span className="text-xs font-bold text-slate-600">
-                                                    {{
-                                                        Home: '返家',
-                                                        RCW: '呼吸照護',
-                                                        HomeHospice: '居家安寧',
-                                                        Facility: '機構安置',
-                                                        Transfer: '轉院'
-                                                    }[p.dischargePlacement.type]}
-                                                </span>
+                                        <div className="mb-3 pt-3 border-t border-slate-50">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] text-white ${p.dischargePlacement.type === 'Home' ? 'bg-emerald-400' :
+                                                            p.dischargePlacement.type === 'Facility' ? 'bg-amber-400' : 'bg-sky-400'
+                                                        }`}>
+                                                        <i className={`fas ${p.dischargePlacement.type === 'Home' ? 'fa-house' :
+                                                                p.dischargePlacement.type === 'Facility' ? 'fa-building' : 'fa-ambulance'
+                                                            }`}></i>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-700">
+                                                        {{
+                                                            Home: '返家照護',
+                                                            RCW: '呼吸照護',
+                                                            HomeHospice: '居家安寧',
+                                                            Facility: '機構安置',
+                                                            Transfer: '轉院治療'
+                                                        }[p.dischargePlacement.type]}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            {p.dischargePlacement.type === 'Home' && p.dischargePlacement.homeCare?.caregiver && (
-                                                <span className="text-[10px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded font-bold">
-                                                    {{ Family: '家人', PrivateNurse: '看護', ForeignCaregiver: '外籍', Other: '其他' }[p.dischargePlacement.homeCare.caregiver]}照顧
-                                                </span>
-                                            )}
-                                            {p.dischargePlacement.type === 'Facility' && (
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${p.dischargePlacement.facility?.status === 'Waiting' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-500'}`}>
-                                                    {{ Searching: '尋找中', Examining: '體檢中', Waiting: '等待轉銜' }[p.dischargePlacement.facility?.status || 'Searching']}
-                                                </span>
-                                            )}
+                                            <p className="text-[10px] text-slate-400 pl-6 truncate">
+                                                {p.dischargePlacement.type === 'Home' && `照顧者: ${{ Family: '家人', PrivateNurse: '看護', ForeignCaregiver: '外籍', Other: '其他' }[p.dischargePlacement.homeCare?.caregiver || 'Other'] || '未定'}`}
+                                                {p.dischargePlacement.type === 'Facility' && (p.dischargePlacement.facility?.name || '尋找中...')}
+                                                {(p.dischargePlacement.type === 'Transfer' || p.dischargePlacement.type === 'RCW') && '待確認轉介單位'}
+                                            </p>
                                         </div>
                                     )}
 

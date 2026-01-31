@@ -43,6 +43,7 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
 
     // Placement Logic
     const [placementData, setPlacementData] = useState<DischargePlacement | undefined>(patients[0]?.dischargePlacement);
+    const [isPlacementExpanded, setIsPlacementExpanded] = useState(true);
 
     const handleSavePlacement = (data: DischargePlacement) => {
         setPlacementData(data);
@@ -262,6 +263,52 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
 
             {/* Content Area */}
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 min-h-[500px] p-8">
+
+                {/* Persistent Header: Basic Info & Placement */}
+                <div className="mb-8 border-b border-slate-100 pb-8">
+                    <button
+                        onClick={() => setIsPlacementExpanded(!isPlacementExpanded)}
+                        className="flex items-center justify-between w-full mb-4 group"
+                    >
+                        <h4 className="text-lg font-bold flex items-center gap-2 text-slate-800">
+                            <i className="fas fa-clipboard-user text-sky-500"></i>
+                            基本資料與安置方向 (AI Context)
+                        </h4>
+                        <span className="text-xs text-slate-400 group-hover:text-sky-600 transition">
+                            <i className={`fas fa-chevron-${isPlacementExpanded ? 'up' : 'down'} mr-1`}></i>
+                            {isPlacementExpanded ? '收折' : '展開'}
+                        </span>
+                    </button>
+
+                    {isPlacementExpanded && (
+                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">病患姓名</label>
+                                    <p className="font-bold text-slate-800 text-lg">{activePatient?.name}</p>
+                                </div>
+                                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">床號 / ID</label>
+                                    <p className="font-bold text-slate-700">{activePatient?.bed} <span className="text-slate-300">|</span> {activePatient?.id}</p>
+                                </div>
+                                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">主責醫師</label>
+                                    <p className="font-bold text-slate-700">Dr. 柯 (V.S.)</p>
+                                </div>
+                                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label className="text-[10px] text-slate-400 font-bold uppercase block mb-1">預計出院日</label>
+                                    <p className="font-bold text-slate-700">{activePatient?.expectedDischargeDate || '未定'}</p>
+                                </div>
+                            </div>
+
+                            <DischargePlacementForm
+                                initialData={placementData}
+                                onSave={handleSavePlacement}
+                            />
+                        </div>
+                    )}
+                </div>
+
                 {/* Step 1: Pre-assessment (S0/S1) */}
                 {activeStepId === 'step_pre' && (
                     <div className="space-y-6">
