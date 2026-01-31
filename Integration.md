@@ -966,3 +966,18 @@ efactor: Move RBAC selection to Login Page。
 > **[User]**: 長照3.0雙軌轉介平台拿掉
 > ---
 > **[Antigravity]**: 收到。將移除 DischargePlanningHub 頁面的標題「長照 3.0 雙軌轉介平台」。
+>
+> **[Status]**: UI Update "Remove Branding" Completed.
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 部署確認中。
+>
+> **[DevOps]**:
+> - **Latest Commit**: `9eb2494` (style: Remove LTC 3.0 branding and fix header layout)
+> - **Git Status**: Clean, up to date with `origin/main`.
+> - **Deployment**: Triggered 1 minute ago.
+
+> **[User]**: 出院計畫擬定內的長照3.0雙軌平台拿掉
+> ---
+> **[Antigravity]**: 檢查是否有殘留的「長照 3.0 雙軌」字樣並移除。

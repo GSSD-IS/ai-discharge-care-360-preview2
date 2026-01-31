@@ -29,7 +29,7 @@ export interface WorkflowDefinition {
 
 export const standardWorkflow: WorkflowDefinition = {
     workflowId: "standard-discharge-v2-ltc3",
-    name: "長照 3.0 標準出院流程 (LTC 3.0 Standard)",
+    name: "標準出院準備流程 (Standard Discharge)",
     version: "2.0.0",
     statemachine: {
         initial: "S0",
