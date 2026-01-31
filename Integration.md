@@ -1017,4 +1017,10 @@ efactor: Move RBAC selection to Login Page。
 > **[Antigravity]**: 收到。將確認並設定「總覽儀表板 (Dashboard)」為系統預設主頁。
 >
 > **[Status]**: Dashboard set as default homepage. Sidebar Brand Logo now acts as "Home" button.
+>
+> **[User]**: 總覽儀表板為主畫面 病房協作平台 擬定出院計劃 出院追蹤為子畫面
+>
+> **[Antigravity]**: 收到。已重構側邊欄導航，將功能分為「Overview (總覽)」、「Clinical Workflow (臨床協作)」與「Tools (工具)」三大區塊，明確區分層級。
+> **[Status]**: Sidebar Navigation Grouping Implemented.
+
 
