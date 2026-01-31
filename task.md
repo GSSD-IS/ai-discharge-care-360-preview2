@@ -130,7 +130,12 @@
 1.  **Verification**: 執行 `npm run build` 確認建置無誤 (Exit Code 0).
 2.  **Documentation**: 更新 `walkthrough.md` 至 v2.0，詳細記錄 LTC 3.0 狀態機與 HITL 功能.
 3.  **Release Tag**: 標記版本 `v2.0-ltc-hitl`.
-4.  **Localization**: 完成 SaaS Admin 與 Login 繁中化.
-5.  **Demo**: 所有 Demo 頁面實作完成 (Patient, Claims, Monitor, Workspace).
+- [x] **1. Documentation Update**
+- [x] Update `walkthrough.md` to reflect the latest UI changes and LTC 3.0 logic.
+- [x] Document the new "Login Page" flow in the walkthrough.
+
+### 2. Localization (i18n)
+- [x] Ensure `AdminLayout` and `LoginPage` are fully localized (Traditional Chinese).
+- [x] Verify no hardcoded English strings in key SaaS user flows.
 
 **[System]**: TERMINATE.

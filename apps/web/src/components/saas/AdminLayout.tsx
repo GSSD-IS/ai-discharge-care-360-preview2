@@ -23,39 +23,39 @@ const AdminLayout: React.FC = () => {
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
                     >
                         <i className="fas fa-chart-line w-5 text-center"></i>
-                        營運總覽 (Dashboard)
+                        營運總覽
                     </button>
                     <button
                         onClick={() => navigate('/admin/tenants')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/tenants') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
                     >
                         <i className="fas fa-hospital-alt w-5 text-center"></i>
-                        租戶管理 (Tenants)
+                        租戶管理
                     </button>
                     <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 transition font-medium">
                         <i className="fas fa-users-cog w-5 text-center"></i>
-                        平台用戶 (Users)
+                        平台用戶
                     </button>
                     <button
                         onClick={() => navigate('/admin/billing')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/billing') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
                     >
                         <i className="fas fa-file-invoice-dollar w-5 text-center"></i>
-                        訂閱與帳單 (Billing)
+                        訂閱與帳單
                     </button>
                     <button
                         onClick={() => navigate('/admin/rbac')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${isActive('/admin/rbac') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
                     >
                         <i className="fas fa-shield-key w-5 text-center"></i>
-                        權限設定 (RBAC)
+                        權限設定
                     </button>
                 </nav>
 
                 <div className="p-4 border-t border-slate-800">
                     <button onClick={() => window.location.href = '/login'} className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-slate-400 hover:text-white transition text-sm">
                         <i className="fas fa-sign-out-alt"></i>
-                        登出 (Sign Out)
+                        登出
                     </button>
                 </div>
             </div>

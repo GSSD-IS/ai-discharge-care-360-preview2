@@ -38,13 +38,13 @@ const LoginPage: React.FC = () => {
             <div className="flex-1 flex justify-center items-center p-8">
                 <div className="w-full max-w-md">
                     <div className="mb-10">
-                        <h2 className="text-3xl font-bold text-slate-800 mb-2">歡迎回來 (Welcome Back)</h2>
+                        <h2 className="text-3xl font-bold text-slate-800 mb-2">歡迎使用</h2>
                         <p className="text-slate-500">請輸入您的醫療人員帳號以登入系統</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">電子郵件 (Email)</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">電子信箱</label>
                             <input
                                 type="email"
                                 value={email}
@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">密碼 (Password)</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">密碼</label>
                             <input
                                 type="password"
                                 value={password}
@@ -75,7 +75,7 @@ const LoginPage: React.FC = () => {
                             type="submit"
                             className="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition shadow-lg shadow-slate-900/20"
                         >
-                            登入 (Sign In)
+                            登入系統
                         </button>
                     </form>
 
@@ -87,7 +87,7 @@ const LoginPage: React.FC = () => {
                             <button onClick={() => { setEmail('admin@care360.com'); setPassword('123'); }} className="px-3 py-1 bg-slate-100 rounded text-xs text-slate-600">管理員 (Admin)</button>
                         </div>
                         <div className="mt-4 text-center">
-                            <p className="text-xs text-slate-400 mb-2">可用租戶 (Available Tenants):</p>
+                            <p className="text-xs text-slate-400 mb-2">可用租戶範例:</p>
                             <div className="flex gap-2 justify-center">
                                 {mockTenants.slice(0, 3).map(t => (
                                     <span key={t.id} className="text-xs px-2 py-1 bg-slate-50 border rounded text-slate-500">{t.name}</span>

@@ -843,3 +843,21 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Result]**: 通過 Build 驗證。
 > 
 > **[Action]**: 部署更新 efactor: Move RBAC selection to Login Page。
+
+
+> **[System_Integrator]**: 收到部署指令，執行同步至 GitHub Repository。
+> 
+> **[Action]**: 執行 git push origin main 確保程式碼與版本庫同步。
+> 
+> **[Note]**: 當前 CI/CD 流程已串接 Vercel，Push to GitHub 將自動觸發 Vercel 生產環境部署。
+
+
+> **[Product_Manager]**: 執行發行前準備 (Documentation & Localization)。
+> 
+> **[Change Log]**:
+> 1. **Documentation**: 建立 walkthrough.md (v2.0)，記錄 UI 改版、AI 功能與 Role-Based 登入流程。
+> 2. **Localization**: 完成 LoginPage 與 AdminLayout 的繁體中文翻譯。
+> 
+> **[Result]**: 通過 UI Build 驗證。
+> 
+> **[Action]**: 部署更新並標記版本 2.0-ltc-hitl。
