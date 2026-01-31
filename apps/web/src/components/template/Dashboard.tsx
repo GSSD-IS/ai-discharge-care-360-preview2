@@ -10,6 +10,32 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpenNewCase }) => {
     const [selectedWard, setSelectedWard] = useState<string>('All');
+    const [editingResource, setEditingResource] = useState<Patient | null>(null);
+
+    const handleResourceEdit = (p: Patient) => {
+        // Create a shallow copy to allow local editing without affecting list immediately if needed, 
+        // but for this mock we edit the reference directly or copy it.
+        // Let's copy to be safe and set it back on save? 
+        // Actually for simplicity in this mock, editing the reference is easiest if we want global update.
+        // But to make React happy with updates:
+        setEditingResource({ ...p });
+    };
+
+    const updateLocalResource = (updatedResources: any) => {
+        if (!editingResource) return;
+        const updatedPatient = { ...editingResource, socialResources: updatedResources };
+        setEditingResource(updatedPatient);
+
+        // Find the patient in the main list and update it too (Mock persistence)
+        const target = patients.find(p => p.id === updatedPatient.id);
+        if (target) {
+            target.socialResources = updatedResources;
+        }
+    };
+
+    const handleCloseModal = () => {
+        setEditingResource(null);
+    };
 
     // Mock current date for calculation consistency: 2023-11-30
     const referenceDate = new Date('2023-11-30');
@@ -75,8 +101,174 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
         );
     };
 
+    const renderSocialResources = (p: Patient) => {
+        if (!p.socialResources) return null;
+        const { ltc, homeNursing, respiratory, facility } = p.socialResources;
+        return (
+            <div className="flex flex-wrap gap-1 mt-2 mb-1" onClick={(e) => { e.stopPropagation(); handleResourceEdit(p); }}>
+                {ltc.active && (
+                    <span className="text-[9px] font-black bg-teal-50 text-teal-600 px-1.5 py-0.5 rounded border border-teal-100 flex items-center gap-1 cursor-pointer hover:bg-teal-100" title="點擊編輯長照狀態">
+                        <i className="fas fa-wheelchair text-[8px]"></i> 長照 Lv.{ltc.level}
+                    </span>
+                )}
+                {homeNursing.active && (
+                    <span className="text-[9px] font-black bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 flex items-center gap-1 cursor-pointer hover:bg-blue-100" title={`收案單位: ${homeNursing.agency}`}>
+                        <i className="fas fa-user-nurse text-[8px]"></i> 居護收案
+                    </span>
+                )}
+                {respiratory.status !== 'None' && (
+                    <span className="text-[9px] font-black bg-rose-50 text-rose-600 px-1.5 py-0.5 rounded border border-rose-100 flex items-center gap-1 cursor-pointer hover:bg-rose-100">
+                        <i className="fas fa-lungs text-[8px]"></i> {respiratory.status}
+                    </span>
+                )}
+                {facility.isResident && (
+                    <span className="text-[9px] font-black bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded border border-amber-100 flex items-center gap-1 cursor-pointer hover:bg-amber-100" title={`入住機構: ${facility.type}`}>
+                        <i className="fas fa-hotel text-[8px]"></i> 機構住民
+                    </span>
+                )}
+                <span className="text-[9px] text-slate-300 hover:text-slate-500 cursor-pointer flex items-center"><i className="fas fa-pen ml-1 text-[8px]"></i></span>
+            </div>
+        );
+    };
+
     return (
-        <div className="grid grid-cols-12 gap-6 p-6">
+        <div className="grid grid-cols-12 gap-6 p-6 relative">
+            {/* Edit Resource Modal */}
+            {editingResource && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm pointer-events-auto" onClick={() => setEditingResource(null)}></div>
+                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative z-10 animate-in zoom-in duration-200 pointer-events-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <i className="fas fa-pen-to-square text-sky-500"></i>
+                                編輯社會資源 & 檢視病歷
+                            </h3>
+                            <button onClick={handleCloseModal} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Patient History (Read-Only from HIS) */}
+                            <div className="bg-slate-50 rounded-xl border border-slate-100 p-4">
+                                <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <i className="fas fa-file-medical text-slate-400"></i>
+                                    HIS 歷史病歷摘要
+                                    <span className="text-[10px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded">唯讀</span>
+                                </h4>
+                                {editingResource.history ? (
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-xs text-slate-400 font-bold mb-1">診斷:</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {editingResource.history.diagnosis.map((d, i) => (
+                                                    <span key={i} className="text-xs bg-white border border-slate-200 px-2 py-1 rounded text-slate-600">{d}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-xs text-slate-400 font-bold mb-1">手術史:</p>
+                                                <ul className="text-xs text-slate-600 list-disc list-inside">
+                                                    {editingResource.history.pastSurgeries.map((s, i) => <li key={i}>{s}</li>)}
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-400 font-bold mb-1">慢性病:</p>
+                                                <ul className="text-xs text-slate-600 list-disc list-inside">
+                                                    {editingResource.history.chronicConditions.map((c, i) => <li key={i}>{c}</li>)}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-slate-400 italic">無相關歷史病歷資料</p>
+                                )}
+                            </div>
+
+                            <hr className="border-slate-100" />
+
+                            {/* LTC */}
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <label className="flex items-center gap-2 mb-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={editingResource.socialResources?.ltc.active || false}
+                                        onChange={(e) => {
+                                            if (!editingResource.socialResources) return;
+                                            const newRes = { ...editingResource.socialResources, ltc: { ...editingResource.socialResources.ltc, active: e.target.checked } };
+                                            updateLocalResource(newRes);
+                                        }}
+                                        className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                                    />
+                                    <span className="font-bold text-slate-700">長照 2.0 (CMS)</span>
+                                </label>
+                                {editingResource.socialResources?.ltc.active && (
+                                    <div className="pl-6">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm text-slate-500 font-bold">失能等級:</span>
+                                            <div className="flex bg-white rounded-lg border border-slate-200 p-1">
+                                                {[2, 3, 4, 5, 6, 7, 8].map(lvl => (
+                                                    <button
+                                                        key={lvl}
+                                                        onClick={() => {
+                                                            if (!editingResource.socialResources) return;
+                                                            const newRes = { ...editingResource.socialResources, ltc: { ...editingResource.socialResources.ltc, level: lvl } };
+                                                            updateLocalResource(newRes);
+                                                        }}
+                                                        className={`w-8 h-8 rounded flex items-center justify-center text-sm font-bold transition ${editingResource.socialResources?.ltc.level === lvl ? 'bg-teal-500 text-white shadow-md' : 'text-slate-400 hover:bg-slate-100'}`}
+                                                    >
+                                                        {lvl}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Home Nursing */}
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <label className="flex items-center gap-2 mb-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={editingResource.socialResources?.homeNursing.active || false}
+                                        onChange={(e) => {
+                                            if (!editingResource.socialResources) return;
+                                            const newRes = { ...editingResource.socialResources, homeNursing: { ...editingResource.socialResources.homeNursing, active: e.target.checked } };
+                                            updateLocalResource(newRes);
+                                        }}
+                                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <span className="font-bold text-slate-700">居家護理收案</span>
+                                </label>
+                                {editingResource.socialResources?.homeNursing.active && (
+                                    <div className="pl-6">
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition"
+                                            placeholder="輸入收案居護所名稱..."
+                                            value={editingResource.socialResources?.homeNursing.agency || ''}
+                                            onChange={(e) => {
+                                                if (!editingResource.socialResources) return;
+                                                const newRes = { ...editingResource.socialResources, homeNursing: { ...editingResource.socialResources.homeNursing, agency: e.target.value } };
+                                                updateLocalResource(newRes);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-2">
+                                <button onClick={handleCloseModal} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">取消</button>
+                                <button onClick={handleCloseModal} className="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition shadow-lg shadow-sky-600/20">儲存變更</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* KPI Section */}
             <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
@@ -182,11 +374,15 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
 
                                     {/* Pre-admission Resources Section */}
                                     <div className="min-h-[40px]">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">既存資源:</p>
-                                        {p.preAdmissionResources && p.preAdmissionResources.length > 0 ? (
-                                            renderPreResources(p)
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">社會資源與身分:</p>
+                                        {(p.socialResources && (p.socialResources.ltc.active || p.socialResources.homeNursing.active || p.socialResources.respiratory.status !== 'None' || p.socialResources.facility.isResident)) ? (
+                                            renderSocialResources(p)
                                         ) : (
-                                            <p className="text-[9px] text-slate-300 italic mt-1">無既存資源紀錄</p>
+                                            p.preAdmissionResources && p.preAdmissionResources.length > 0 ? (
+                                                renderPreResources(p)
+                                            ) : (
+                                                <p className="text-[9px] text-slate-300 italic mt-1">無特殊身分註記</p>
+                                            )
                                         )}
                                     </div>
 
@@ -197,10 +393,10 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-1.5">
                                                     <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] text-white ${p.dischargePlacement.type === 'Home' ? 'bg-emerald-400' :
-                                                            p.dischargePlacement.type === 'Facility' ? 'bg-amber-400' : 'bg-sky-400'
+                                                        p.dischargePlacement.type === 'Facility' ? 'bg-amber-400' : 'bg-sky-400'
                                                         }`}>
                                                         <i className={`fas ${p.dischargePlacement.type === 'Home' ? 'fa-house' :
-                                                                p.dischargePlacement.type === 'Facility' ? 'fa-building' : 'fa-ambulance'
+                                                            p.dischargePlacement.type === 'Facility' ? 'fa-building' : 'fa-ambulance'
                                                             }`}></i>
                                                     </div>
                                                     <span className="text-xs font-bold text-slate-700">

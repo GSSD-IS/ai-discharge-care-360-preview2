@@ -1017,10 +1017,25 @@ efactor: Move RBAC selection to Login Page。
 > **[Antigravity]**: 收到。將確認並設定「總覽儀表板 (Dashboard)」為系統預設主頁。
 >
 > **[Status]**: Dashboard set as default homepage. Sidebar Brand Logo now acts as "Home" button.
+
+> **[User]**: 總覽儀表板自動介接醫院歷史紀錄   自動帶入病人住院前社會資源   如長照在案    居家護理收案  呼吸4階   機構住民等  這些狀態亦可手動修改
 >
-> **[User]**: 總覽儀表板為主畫面 病房協作平台 擬定出院計劃 出院追蹤為子畫面
+> **[Antigravity]**: 針對此「HIS 整合與社會資源自動化」需求，更新執行計畫：
 >
-> **[Antigravity]**: 收到。已重構側邊欄導航，將功能分為「Overview (總覽)」、「Clinical Workflow (臨床協作)」與「Tools (工具)」三大區塊，明確區分層級。
-> **[Status]**: Sidebar Navigation Grouping Implemented.
+> ### 資料層 (Data Layer)
+> 1. **擴充 Mock Data**: 在 `Patient` 資料結構增加 `socialResources` 欄位，包含：
+>    - `cmsStatus`: 長照 (LTC) 在案狀態 (Active/Inactive, Level 1-8)。
+>    - `homeNursingStatus`: 居家護理收案狀態。
+>    - `respiratoryStatus`: 呼吸照護階數 (RCW, RCC, etc.)。
+>    - `facilityStatus`: 是否為機構住民。
+>
+> ### 介面層 (UI Layer)
+> 1. **總覽儀表板 (Dashboard)**:
+>    - 在病患卡片或列表增加「資源標籤 (Tags)」，自動顯示已連結的資源 (如：`長照 Lv.4`, `RCW`).
+>    - 「歷史病歷」區塊：顯示自動介接的過往紀錄。
+> 2. **編輯功能 (Editability)**:
+>    - 點擊資源標籤或進入詳情頁後，提供介面手動修正這些「自動帶入」的狀態 (Override Mechanism)。
+>
+> 請問此規劃是否符合您的需求？ (同意請回覆 "OK")
 
 

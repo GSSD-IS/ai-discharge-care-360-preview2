@@ -31,7 +31,18 @@ export const initialPatients: Patient[] = [
         ],
         matchedResources: [
             { id: 'r1', category: '輔具服務' as any, name: '永和輔具中心', contactPerson: '李專員', phone: '02-2929-1234', status: '待確認' as any, city: '新北市' }
-        ]
+        ],
+        socialResources: {
+            ltc: { active: true, level: 4 },
+            homeNursing: { active: true, agency: '慈濟居家護理所' },
+            respiratory: { status: 'None', stage: 0 },
+            facility: { isResident: false, type: '' }
+        },
+        history: {
+            diagnosis: ['COPD', 'Hypertension'],
+            pastSurgeries: ['Appendectomy (2010)'],
+            chronicConditions: ['Diabetes']
+        }
     },
     {
         id: "8822",
@@ -56,7 +67,13 @@ export const initialPatients: Patient[] = [
         ],
         assessments: [
             { role: DepartmentRole.SocialWorker, status: "評估中", lastNote: "養護機構空床洽詢中", updatedAt: "2023-11-26" }
-        ]
+        ],
+        socialResources: {
+            ltc: { active: true, level: 7 },
+            homeNursing: { active: false, agency: '' },
+            respiratory: { status: 'None', stage: 0 },
+            facility: { isResident: true, type: '康寧養護中心' }
+        }
     },
     {
         id: "8823",

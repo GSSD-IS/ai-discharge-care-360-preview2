@@ -74,29 +74,7 @@ export interface CoordinationTask {
     status: 'Pending' | 'Ongoing' | 'Done';
 }
 
-export interface Patient {
-    id: string;
-    name: string;
-    age: number;
-    gender: 'Male' | 'Female';
-    department: string;
-    bed: string;
-    diagnosis?: string;
-    riskScore: number;
-    status: CaseStatus;
-    admissionDate: string;
-    expectedDischargeDate: string;
-    cci: number;
-    adl: number;
-    dischargeType?: DischargeType;
-    prepItems?: PrepItem[];
-    assessments?: DeptAssessment[];
-    preAdmissionResources?: string[];
-    matchedResources?: MatchedResource[];
-    primaryCaregiver?: string;
-    primaryContact?: string;
-    dischargePlacement?: DischargePlacement;
-}
+
 
 export interface FollowUpRecord {
     patientId: string;
@@ -193,6 +171,8 @@ export type PlacementType =
     | 'Facility'
     | 'Transfer';
 
+
+
 export interface DischargePlacement {
     type: PlacementType;
     // 1-1. 返家
@@ -205,4 +185,47 @@ export interface DischargePlacement {
     facility?: FacilityPrep;
     // 2-2. 轉院
     transfer?: TransferPrep;
+}
+
+// --- HIS & Social Resource Integration ---
+
+export interface SocialResourceStatus {
+    ltc: { active: boolean; level: number };
+    homeNursing: { active: boolean; agency: string };
+    respiratory: { status: 'RCW' | 'RCC' | 'None'; stage: number };
+    facility: { isResident: boolean; type: string };
+}
+
+export interface PatientHistory {
+    diagnosis: string[];
+    pastSurgeries: string[];
+    chronicConditions: string[];
+}
+
+// Update Patient Interface (Merge this carefully with existing)
+export interface Patient {
+    id: string;
+    name: string;
+    age: number;
+    gender: 'Male' | 'Female';
+    department: string;
+    bed: string;
+    diagnosis?: string;
+    riskScore: number;
+    status: CaseStatus;
+    admissionDate: string;
+    expectedDischargeDate: string;
+    cci: number;
+    adl: number;
+    dischargeType?: DischargeType;
+    prepItems?: PrepItem[];
+    assessments?: DeptAssessment[];
+    preAdmissionResources?: string[];
+    matchedResources?: MatchedResource[];
+    primaryCaregiver?: string;
+    primaryContact?: string;
+    dischargePlacement?: DischargePlacement;
+    // New Fields
+    socialResources?: SocialResourceStatus;
+    history?: PatientHistory;
 }
