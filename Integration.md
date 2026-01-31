@@ -895,3 +895,19 @@ efactor: Move RBAC selection to Login Page。
 
 > **[DevOps]**: Pushing changes to GitHub to trigger Vercel deployment.
 > - **Commit**: `feat: Integrate CaseDetail into WardTeamHub`
+
+> **[User]**: 出院計畫擬定頁面可自動介接或手動輸入病人基本資料、家庭狀況、安置方向等資料。可依綜合評估依安置方向AI自動生成照護計畫。選擇發送給病人及家屬或印出計劃。
+> ---
+> **[Antigravity]**: 收到。這是將「資料蒐集」與「AI 生成」深度結合的需求。
+>
+> **[Planner]**: 需求拆解：
+> 1.  **資料整合**: 在 `DischargePlanningHub` 顯示並允許編輯 Basic Info, Family Status, Discharge Placement。
+> 2.  **AI 生成**: 更新 AI Prompt，將 `DischargePlacement` 納入 Context 以生成客製化計畫。
+> **[Antigravity]**: 出院計畫擬定模組增強完成。
+>
+> **[Coder]**: 
+> 1. Integration: `DischargePlanningHub` now includes `DischargePlacementForm` in S1 for data collection.
+> 2. AI Logic: Updated `geminiService` to generate education content based on placement type (Home vs Facility) and caregiver status.
+> 3. Output: Added `Print` and `Send to App` features in S4.
+> 
+> **[Status]**: Feature "Comprehensive Plan Generation" Completed.

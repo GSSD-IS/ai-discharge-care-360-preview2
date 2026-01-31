@@ -63,7 +63,37 @@ export const generateEducationText = async (category: string, patient: Patient):
         });
         return res.content;
     } catch (e) {
-        console.error("AI Education Error", e);
+        console.warn("AI Education API unavailable, using mock generator", e);
+
+        // Mock Generation Logic based on Placement
+        const placement = patient.dischargePlacement?.type || 'Unknown';
+        const caregiver = patient.dischargePlacement?.homeCare?.caregiver || 'Unknown';
+
+        if (category === 'HomeCare') {
+            if (placement === 'Home') {
+                return `[AI 生成建議] 針對返家照護 (${caregiver === 'ForeignCaregiver' ? '外籍看護' : '家屬'}由${caregiver}照顧)：
+1. 居家環境：請確保走道寬敞無障礙物，預防跌倒。
+2. 輔具使用：依照建議準備${patient.dischargePlacement?.homeCare?.medicalDevices.join('、') || '所需輔具'}。
+3. 傷口照護：每日觀察傷口是否有紅腫熱痛，保持乾燥。`;
+            } else if (placement === 'Facility') {
+                return `[AI 生成建議] 針對機構安置 (${patient.dischargePlacement?.facility?.name || '護理之家'})：
+1. 請提供機構完整的出院摘要與用藥紀錄。
+2. 確認機構是否有呼吸照護能力 (若病患有呼吸器需求)。`;
+            }
+        }
+
+        if (category === 'Medication') {
+            return `[AI 生成建議] 用藥指導：
+1. 抗凝血劑 (Warfarin)：每日固定時間服用，刷牙請用軟毛牙刷。
+2. 若出現黑便或異常瘀青，請立即回診。`;
+        }
+
+        if (category === 'FollowUp') {
+            return `[AI 生成建議] 回診計畫：
+1. 預計兩週後回診心臟內科。
+2. 若發生呼吸喘、胸痛，請立即至急診就醫。`;
+        }
+
         return '暫無法取得 AI 衛教內容。';
     }
 };

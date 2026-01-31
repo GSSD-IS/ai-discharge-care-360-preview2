@@ -4,6 +4,8 @@ import { generateCarePlanAI, generateEducationText } from '../../services/gemini
 import { standardWorkflow } from '../../data/standardWorkflow';
 import { vitalMonitor } from '../../services/vitalSignMonitor';
 import { SmartCMSForm } from '../assessment/SmartCMSForm';
+import DischargePlacementForm from './DischargePlacementForm';
+import type { DischargePlacement } from '../../types/template';
 
 interface DischargePlanningHubProps {
     patients: Patient[];
@@ -39,6 +41,27 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
     const [matchedResources, setMatchedResources] = useState<MatchedResource[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
+    // Placement Logic
+    const [placementData, setPlacementData] = useState<DischargePlacement | undefined>(patients[0]?.dischargePlacement);
+
+    const handleSavePlacement = (data: DischargePlacement) => {
+        setPlacementData(data);
+        if (activePatient) {
+            activePatient.dischargePlacement = data; // Sync to patient object
+        }
+        alert("安置方向已更新！AI 將參考此資料生成計畫。");
+    };
+
+    // Print & Send Logic
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleSendToApp = () => {
+        setIsPublished(true);
+        alert(`已發送至病患 [${activePatient?.name}] 的家屬端 App！\n包含：\n1. 出院照護計畫書 PDF\n2. 衛教影片清單\n3. 居家照顧注意事項`);
+    };
+
     // CMS Score State
     const [cmsScore, setCmsScore] = useState<number | null>(null);
 
@@ -69,6 +92,13 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
         // Reset state on patient change for demo
         setCurrentState('S0');
     }, [selectedPatientId, patients]);
+
+    // Sync placement data when active patient changes
+    useEffect(() => {
+        if (activePatient) {
+            setPlacementData(activePatient.dischargePlacement);
+        }
+    }, [activePatient]);
 
     // Manual Override Logic (L4 Decide)
     const handleOverride = () => {
@@ -139,13 +169,6 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
         setMatchedResources(prev => [...prev, ...imported.map(i => ({ ...i, id: 'imported-' + Math.random() }))]);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handlePublish = () => {
-        setIsPublished(true);
-        setTimeout(() => {
-            alert("計畫已正式同步至家屬端行動 App！");
-        }, 100);
-    };
 
     const filteredLibrary = useMemo(() => {
         return MOCK_THIRD_PARTY_RESOURCES.filter(res =>
@@ -260,6 +283,31 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                             </div>
                         )}
                         {!aiPlan && <div className="text-center py-20 text-slate-300">系統背景監測中... 無異常發現</div>}
+
+                        <div className="mt-8 pt-8 border-t border-slate-100">
+                            <h4 className="text-lg font-bold mb-4">基本資料與安置方向 (AI Context)</h4>
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div className="p-3 bg-white rounded-lg border border-slate-200">
+                                        <label className="text-[10px] text-slate-400 font-bold uppercase">病患姓名</label>
+                                        <p className="font-bold text-slate-700">{activePatient?.name}</p>
+                                    </div>
+                                    <div className="p-3 bg-white rounded-lg border border-slate-200">
+                                        <label className="text-[10px] text-slate-400 font-bold uppercase">床號</label>
+                                        <p className="font-bold text-slate-700">{activePatient?.bed}</p>
+                                    </div>
+                                    <div className="p-3 bg-white rounded-lg border border-slate-200">
+                                        <label className="text-[10px] text-slate-400 font-bold uppercase">主責醫師</label>
+                                        <p className="font-bold text-slate-700">Dr. 柯 (V.S.)</p>
+                                    </div>
+                                </div>
+
+                                <DischargePlacementForm
+                                    initialData={placementData}
+                                    onSave={handleSavePlacement}
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -414,7 +462,14 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                 <p className="text-slate-500">長照服務已啟動。0-Day Wait 達成。</p>
                             </>
                         ) : (
-                            <button onClick={handlePublish} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">確認結案</button>
+                            <div className="flex justify-center gap-4">
+                                <button onClick={handlePrint} className="bg-white border-2 border-slate-800 text-slate-800 px-8 py-3 rounded-xl font-bold hover:bg-slate-50 transition">
+                                    <i className="fas fa-print mr-2"></i> 列印計畫書
+                                </button>
+                                <button onClick={handleSendToApp} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition shadow-xl">
+                                    <i className="fas fa-paper-plane mr-2"></i> 發送至家屬 App
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}
