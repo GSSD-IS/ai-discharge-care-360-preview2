@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import Dashboard from './components/template/Dashboard';
-import CaseDetail from './components/template/CaseDetail';
 import DischargePlanningHub from './components/template/DischargePlanningHub';
 import FollowUpTracking from './components/template/FollowUpTracking';
 import WardTeamHub from './components/template/WardTeamHub';
@@ -49,7 +48,8 @@ const ClinicalApp: React.FC = () => {
   const navItems = [
     { id: 'dashboard', label: '總覽儀表板', icon: 'fa-chart-pie', roles: ['Doctor', 'Nurse'] },
     { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-md', roles: ['Doctor'] },
-    { id: 'detail', label: '個案進度詳情', icon: 'fa-file-medical-alt', roles: ['Doctor', 'Nurse'] },
+    { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-md', roles: ['Doctor'] },
+    // { id: 'detail', label: '個案進度詳情', icon: 'fa-file-medical-alt', roles: ['Doctor', 'Nurse'] }, // Merged into Team Hub
     { id: 'team', label: '病房協作平台', icon: 'fa-user-nurse', roles: ['Doctor', 'Nurse'] },
     { id: 'planning', label: '出院計畫擬定', icon: 'fa-clipboard-list', roles: ['Doctor', 'Nurse'] },
     { id: 'followup', label: '追蹤與再入院', icon: 'fa-phone', roles: ['Doctor', 'Nurse'] },
@@ -62,7 +62,7 @@ const ClinicalApp: React.FC = () => {
   // When patient is selected from dashboard, we might want to go to Detail or Planning
   const handleSelectPatient = (p: Patient) => {
     setCurrentPatient(p);
-    setActiveTab('detail');
+    setActiveTab('team');
   };
 
   const handleCreateCase = (newPatient: Patient) => {
@@ -94,14 +94,16 @@ const ClinicalApp: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard patients={patients} onSelectPatient={handleSelectPatient} onOpenNewCase={() => setShowNewCaseModal(true)} />;
-      case 'detail':
-        return currentPatient ?
-          <CaseDetail patient={currentPatient} onBack={() => setActiveTab('dashboard')} /> :
-          <Dashboard patients={patients} onSelectPatient={handleSelectPatient} onOpenNewCase={() => setShowNewCaseModal(true)} />;
+      // case 'detail': Removed
       case 'planning':
         return <DischargePlanningHub patients={patients} />;
       case 'team':
-        return <WardTeamHub patients={patients} />;
+        return <WardTeamHub
+          patients={patients}
+          selectedPatient={currentPatient}
+          onSelectPatient={handleSelectPatient}
+          onBack={() => setCurrentPatient(null)}
+        />;
       case 'followup':
         return <FollowUpTracking patients={patients} />;
       case 'analytics':

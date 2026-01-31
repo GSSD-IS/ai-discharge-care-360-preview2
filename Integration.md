@@ -842,7 +842,8 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > 
 > **[Result]**: 通過 Build 驗證。
 > 
-> **[Action]**: 部署更新 efactor: Move RBAC selection to Login Page。
+> **[Action]**: 部署更新 
+efactor: Move RBAC selection to Login Page。
 
 
 > **[System_Integrator]**: 收到部署指令，執行同步至 GitHub Repository。
@@ -872,3 +873,25 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Validation]**: 執行 Build 驗證通過，功能正常遷移。
 > 
 > **[Result]**: 介面邏輯更清晰，避免詳情頁功能過載。
+
+> **[User]**: 把個案進度詳情頁面搬移到病房協作平台
+> ---
+> **[Antigravity]**: 收到。您希望整合「個案進度詳情 (CaseDetail)」至「病房協作平台 (WardTeamHub)」。
+>
+> **[Planner]**: 分析目前架構：
+> - `ClinicalApp.tsx` 目前負責在 `Dashboard` (總覽), `WardTeamHub` (協作) 等頁面切換。
+> - `CaseDetail` 為獨立視圖。
+>
+> **[Action Plan]**:
+> 1.  **Modify Routing**: 調整 `ClinicalApp.tsx`，讓病患點擊後留在 `WardTeamHub` 或將 `CaseDetail` 整合進去。
+> **[Antigravity]**: 調整完畢。現在 `WardTeamHub` 已整合 `CaseDetail` 視圖，並優化了導航邏輯。
+>
+> **[Coder]**: 
+> 1. Modified `WardTeamHub` to accept `selectedPatient` prop.
+> 2. Added click handler on Tasks to trigger patient selection.
+> 3. Refactored `ClinicalApp` to route patient selection to `WardTeamHub`.
+> 
+> **[Status]**: UI Refactor Completed.
+
+> **[DevOps]**: Pushing changes to GitHub to trigger Vercel deployment.
+> - **Commit**: `feat: Integrate CaseDetail into WardTeamHub`

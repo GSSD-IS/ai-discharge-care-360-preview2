@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { DepartmentRole, type CoordinationTask, type Patient } from '../../types/template';
 
+import CaseDetail from './CaseDetail';
+
 interface WardTeamHubProps {
     patients: Patient[];
+    selectedPatient?: Patient | null;
+    onSelectPatient?: (patient: Patient) => void;
+    onBack?: () => void;
 }
 
 const mockTasks: CoordinationTask[] = [
@@ -13,7 +18,11 @@ const mockTasks: CoordinationTask[] = [
     { id: 't5', patientId: 'ID: 8821', patientName: '張曉明', bed: '702-1', dept: DepartmentRole.Pharmacist, title: '出院帶藥教育', priority: 'Low', deadline: '11/25', status: 'Pending' },
 ];
 
-const WardTeamHub: React.FC<WardTeamHubProps> = ({ patients }) => {
+const WardTeamHub: React.FC<WardTeamHubProps> = ({ patients, selectedPatient, onSelectPatient, onBack }) => {
+    if (selectedPatient && onBack) {
+        return <CaseDetail patient={selectedPatient} onBack={onBack} />;
+    }
+
     const [activeDept, setActiveDept] = useState<DepartmentRole | 'All'>('All');
     const referenceDate = new Date('2023-11-30');
 
@@ -129,7 +138,17 @@ const WardTeamHub: React.FC<WardTeamHubProps> = ({ patients }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredTasks.map(task => (
-                    <div key={task.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group flex flex-col">
+                    <div
+                        key={task.id}
+                        onClick={() => {
+                            // Try to find by ID first, then by name, fallback to first patient
+                            const target = patients.find(pat => pat.id === task.patientId.replace('ID: ', '')) ||
+                                patients.find(pat => pat.name === task.patientName) ||
+                                patients[0];
+                            if (onSelectPatient && target) onSelectPatient(target);
+                        }}
+                        className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group flex flex-col cursor-pointer hover:border-sky-200"
+                    >
                         <div className="flex justify-between items-start mb-3">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-black text-white uppercase tracking-wider ${deptColors[task.dept]}`}>
                                 {task.dept}
