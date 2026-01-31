@@ -232,5 +232,19 @@ export const mockUsers: User[] = [
         name: '王醫師',
         role: UserRole.Doctor,
         tenantId: 't1'
+    },
+    {
+        id: 'u6',
+        email: 'cm@ltc.gov.tw',
+        name: '張長照個管',
+        role: UserRole.Nurse,
+        tenantId: 't1'
+    },
+    {
+        id: 'u7',
+        email: 'hn@homecare.com',
+        name: '李居家護理師',
+        role: UserRole.Nurse,
+        tenantId: 't1'
     }
 ];

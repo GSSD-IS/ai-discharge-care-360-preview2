@@ -981,3 +981,29 @@ efactor: Move RBAC selection to Login Page。
 > **[User]**: 出院計畫擬定內的長照3.0雙軌平台拿掉
 > ---
 > **[Antigravity]**: 檢查是否有殘留的「長照 3.0 雙軌」字樣並移除。
+>
+> **[Status]**: UI Update "Remove Remaining Branding" Completed.
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 部署確認中。
+>
+> **[DevOps]**:
+> - **Latest Commit**: `a3ff2d6` (fix: Remove premature closing tag and update workflow name)
+> - **Git Status**: Clean, up to date with `origin/main`.
+> - **Deployment**: Triggered < 1 minute ago.
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 確認部署狀態。
+>
+> **[DevOps]**:
+> - **Latest Commit**: `a3ff2d6` (fix: Remove premature closing tag and update workflow name)
+> - **Git Status**: Synced with `origin/main`.
+> - **Deployment**: Triggered ~2 minutes ago. Should be live.
+
+> **[User]**: 病房協作平台 製作團隊溝通介面 主責醫師及照會單位自動加入溝通平台對話成員 亦可手動加入有院內HIS帳號成員 如長照個管師/居家護理師等
+> ---
+> **[Antigravity]**: 收到。將於 Ward Team Hub 實作進階團隊溝通功能：
+> 1. **Auto-Add**: 自動帶入主治醫師與關聯照會單位。
+> 2. **Manual-Add**: 模擬 HIS 院內通訊錄搜尋與加入成員功能。

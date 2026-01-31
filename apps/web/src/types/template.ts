@@ -130,6 +130,17 @@ export interface EducationContent {
     isAiGenerated: boolean;
 }
 
+// Team Communication
+export interface TeamMember {
+    id: string;
+    name: string;
+    role: string;
+    dept: DepartmentRole | string;
+    isOnline: boolean;
+    avatar?: string;
+    joinedAt?: string;
+}
+
 export interface Message {
     id: string;
     sender: string;

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { type Patient, type Message, DepartmentRole, type DischargePlacement } from '../../types/template';
+import { type Patient, type Message, DepartmentRole, type DischargePlacement, type TeamMember } from '../../types/template';
 import DischargePlacementForm from './DischargePlacementForm';
+import { mockUsers } from '../../data/mockData';
+import { UserRole } from '../../types/saas';
 
 interface CaseDetailProps {
     patient: Patient;
@@ -33,6 +34,67 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
         { id: '4', sender: '陳營養', role: 'Nutritionist', dept: DepartmentRole.Nutritionist, content: '已提供低鈉低脂飲食建議。', timestamp: '2023-11-24 09:15' }
     ]);
     const [newMessage, setNewMessage] = useState('');
+
+    // --- Team Communication Logic ---
+    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Auto-Join Effect
+    React.useEffect(() => {
+        const initialTeam: TeamMember[] = [
+            { id: 'tm1', name: 'Dr. 柯 (V.S.)', role: '主責醫師', dept: DepartmentRole.Doctor, isOnline: true, avatar: 'Doctor' },
+            { id: 'tm2', name: '你 (Nurse)', role: '專責護理', dept: DepartmentRole.Nurse, isOnline: true, avatar: 'Nurse' },
+        ];
+
+        // Auto-add from assessments
+        patient.assessments?.forEach((ast, idx) => {
+            if (ast.role !== DepartmentRole.Nurse && ast.role !== DepartmentRole.Doctor) {
+                initialTeam.push({
+                    id: `auto-${idx}`,
+                    name: `${ast.role} 專員`,
+                    role: ast.role,
+                    dept: ast.role,
+                    isOnline: false,
+                    avatar: ast.role
+                });
+            }
+        });
+
+        setTeamMembers(initialTeam);
+    }, [patient]);
+
+    const handleAddMember = (user: typeof mockUsers[0]) => {
+        const isExists = teamMembers.some(m => m.id === user.id);
+        if (isExists) {
+            alert('該成員已在群組中');
+            return;
+        }
+
+        const newMember: TeamMember = {
+            id: user.id,
+            name: user.name,
+            role: user.role,
+            dept: '外部單位', // Simplified
+            isOnline: false,
+            joinedAt: new Date().toLocaleString(),
+            avatar: user.role
+        };
+
+        setTeamMembers([...teamMembers, newMember]);
+        setShowAddMemberModal(false);
+
+        // System Message
+        const sysMsg: Message = {
+            id: Date.now().toString(),
+            sender: 'System',
+            role: 'System',
+            dept: DepartmentRole.Nurse,
+            content: `${user.name} (${user.role}) 已加入群組`,
+            timestamp: new Date().toLocaleString()
+        };
+        setMessages(prev => [...prev, sysMsg]);
+    };
 
     const currentRiskScore = patient.riskScore;
 
@@ -238,13 +300,24 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                         <h3 className="font-black text-slate-800 flex items-center gap-2">
                             <i className="fas fa-comments text-teal-600"></i> 跨團隊溝通區
                         </h3>
-                        <div className="flex -space-x-2">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                                    <i className="fas fa-user"></i>
-                                </div>
-                            ))}
-                            <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">+4</div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex -space-x-2">
+                                {teamMembers.slice(0, 5).map(m => (
+                                    <div key={m.id} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 overflow-hidden" title={m.name}>
+                                        {m.avatar?.startsWith('http') ? <img src={m.avatar} alt={m.name} /> : <i className="fas fa-user"></i>}
+                                    </div>
+                                ))}
+                                {teamMembers.length > 5 && (
+                                    <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">+{teamMembers.length - 5}</div>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => setShowAddMemberModal(true)}
+                                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-teal-50 text-slate-400 hover:text-teal-600 flex items-center justify-center transition border border-dashed border-slate-300"
+                                title="邀請成員"
+                            >
+                                <i className="fas fa-plus"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -290,7 +363,131 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Add Member Modal */}
+            {showAddMemberModal && (
+                <div className="absolute inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col p-6 animate-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold">邀請新成員 (HIS)</h3>
+                            <button onClick={() => setShowAddMemberModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div className="relative mb-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="搜尋姓名、工號或職稱..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            />
+                            <i className="fas fa-search absolute left-3 top-3.5 text-slate-400"></i>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2">
+                            <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">建議聯絡人</p>
+                            {mockUsers
+                                .filter(u => u.name.includes(searchQuery) || u.role.includes(searchQuery))
+                                .map(user => (
+                                    <button
+                                        key={user.id}
+                                        onClick={() => handleAddMember(user)}
+                                        className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl group transition text-left"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+                                                <i className="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800">{user.name}</p>
+                                                <p className="text-xs text-slate-500">{user.role} • {user.email}</p>
+                                            </div>
+                                        </div>
+                                        <span className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-300 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white group-hover:border-teal-500 transition shadow-sm">
+                                            <i className="fas fa-plus"></i>
+                                        </span>
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+    );
+};
+
+export default CaseDetail;
+<div className="absolute right-2 top-2 flex gap-1">
+    <button className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+        <i className="fas fa-paperclip"></i>
+    </button>
+    <button onClick={sendMessage} className="w-8 h-8 flex items-center justify-center bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-md">
+        <i className="fas fa-paper-plane"></i>
+    </button>
+</div>
+                        </div >
+                    </div >
+                </div >
+            </div >
+        </div >
+                </div >
+            </div >
+
+    {/* Add Member Modal */ }
+{
+    showAddMemberModal && (
+        <div className="absolute inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col p-6 animate-in zoom-in duration-200">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold">邀請新成員 (HIS)</h3>
+                    <button onClick={() => setShowAddMemberModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
+                        <i className="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div className="relative mb-4">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="搜尋姓名、工號或職稱..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <i className="fas fa-search absolute left-3 top-3.5 text-slate-400"></i>
+                </div>
+
+                <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2">
+                    <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">建議聯絡人</p>
+                    {mockUsers
+                        .filter(u => u.name.includes(searchQuery) || u.role.includes(searchQuery))
+                        .map(user => (
+                            <button
+                                key={user.id}
+                                onClick={() => handleAddMember(user)}
+                                className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl group transition text-left"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+                                        <i className="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-slate-800">{user.name}</p>
+                                        <p className="text-xs text-slate-500">{user.role} • {user.email}</p>
+                                    </div>
+                                </div>
+                                <span className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-300 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white group-hover:border-teal-500 transition shadow-sm">
+                                    <i className="fas fa-plus"></i>
+                                </span>
+                            </button>
+                        ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+        </div >
     );
 };
 
