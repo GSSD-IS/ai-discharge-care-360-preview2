@@ -272,9 +272,9 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                                         className="group relative bg-slate-50 border border-transparent rounded-2xl p-5 hover:bg-white hover:border-sky-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
                                     >
                                         {stayDays > 14 && (
-                                            <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none">
-                                                <div className="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black px-2 py-1 rounded-bl-xl shadow-sm">
-                                                    Long Stay
+                                            <div className="absolute top-0 right-0 pointer-events-none z-20">
+                                                <div className="bg-amber-500 text-white text-[9px] font-black px-2 py-1 rounded-bl-xl shadow-sm whitespace-nowrap">
+                                                    {'>'}14天超長住院標示
                                                 </div>
                                             </div>
                                         )}
