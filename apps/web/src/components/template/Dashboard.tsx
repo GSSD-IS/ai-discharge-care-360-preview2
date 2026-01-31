@@ -165,7 +165,7 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                                 <span className="text-[10px] font-bold bg-green-50 text-green-600 px-2 py-1 rounded-full">+12%</span>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">住院病患總數</p>
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">收案病人總數</p>
                                 <h2 className="text-4xl font-black text-slate-800">{patients.length} <span className="text-sm font-medium text-slate-300">人</span></h2>
                             </div>
                         </div>
@@ -203,18 +203,35 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                         </div>
                     </div>
 
-                    {/* Card 4: Occupancy */}
+                    {/* Card 4: PAC Eligible Cases */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow group cursor-default relative overflow-hidden">
                         <div className="relative z-10">
-                            <div className="flex justify-between items-start mb-4">
+                            <div className="flex justify-between items-start mb-2">
                                 <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                    <i className="fas fa-bed"></i>
+                                    <i className="fas fa-heart-pulse"></i>
                                 </div>
-                                <span className="text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-1 rounded-full">High</span>
+                                <span className="text-[10px] font-bold bg-rose-50 text-rose-600 px-2 py-1 rounded-full">PAC</span>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">病床佔有率</p>
-                                <h2 className="text-4xl font-black text-slate-800">92 <span className="text-sm font-medium text-slate-300">%</span></h2>
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">符合 PAC 條件個案</p>
+                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 pt-1">
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-600">
+                                        <span>腦中風</span>
+                                        <span className="bg-slate-100 px-1.5 rounded text-rose-600">3</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-600">
+                                        <span>腦損傷</span>
+                                        <span className="bg-slate-100 px-1.5 rounded text-rose-600">1</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-600">
+                                        <span>骨折</span>
+                                        <span className="bg-slate-100 px-1.5 rounded text-rose-600">2</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-600">
+                                        <span>衰弱</span>
+                                        <span className="bg-slate-100 px-1.5 rounded text-rose-600">4</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
