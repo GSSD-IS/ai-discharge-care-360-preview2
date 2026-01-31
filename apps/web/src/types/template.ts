@@ -229,3 +229,14 @@ export interface Patient {
     socialResources?: SocialResourceStatus;
     history?: PatientHistory;
 }
+
+export interface ToDoItem {
+    id: string;
+    title: string;          // 事項內容 (e.g. 跨團隊會議)
+    date: string;           // 日期 (YYYY-MM-DD)
+    time: string;           // 時間 (HH:mm)
+    location: string;       // 地點 (e.g. 7A護理站)
+    target: string;         // 對象 (e.g. 家屬, 社工)
+    isCompleted: boolean;
+    priority: 'High' | 'Normal';
+}

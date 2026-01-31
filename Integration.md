@@ -1037,5 +1037,33 @@ efactor: Move RBAC selection to Login Page。
 >    - 點擊資源標籤或進入詳情頁後，提供介面手動修正這些「自動帶入」的狀態 (Override Mechanism)。
 >
 > 請問此規劃是否符合您的需求？ (同意請回覆 "OK")
+>
+> **[User]**: 部屬好了嗎
+>
+> **[Antigravity]**: 部署程序已完成 (Commit: `3ea0395`)。
+>
+> **[User]**: 總儀表板AI資源媒合決策中心更改成待辦事項總覽 可自行編輯 如跨團隊會議 病房長照評估 家屬約訪討論出院事項等 欄位具備日期 時間 地點 對象 依時間排序
+>
+> **[Antigravity]**: 收到。建議啟動 **Dashboard Architect** 與 **Task Planner** 進行設計。
+>
+> **[User]**: 同意
+>
+> **[Antigravity]**: 專家團隊已啟動。
+>
+> ### 專家規劃報告 (Expert Planning)
+> **[Dashboard Architect]**:
+> - **版面替換**: 移除 Dashboard 右側的 `AI 資源媒合決策中心` (黑色區塊)，改為明亮風格的 `待辦事項/任務清單 (To-Do List)`。
+> - **布局**: 維持 `col-span-4` (Desktop) 寬度，與下方圖表對齊。
+> - **視覺**: 採用卡片式清單，左側顯示時間軸，右側為任務內容。
+>
+> **[Task Planner]**:
+> - **資料結構**: 定義 `ToDoItem`，包含日期、時間、地點、對象 (Target)、標題。
+> - **排序邏輯**: `ORDER BY date ASC, time ASC` (由近到遠)。
+> - **互動**:
+>   - 列表頁顯示今日/近期任務。
+>   - 點擊「+」新增任務。
+>   - 點擊任務卡片進行編輯/完成。
+>
+> 請問此設計方向是否準確？
 
 

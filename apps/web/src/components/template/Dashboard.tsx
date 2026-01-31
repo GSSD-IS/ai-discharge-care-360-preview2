@@ -12,6 +12,15 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
     const [selectedWard, setSelectedWard] = useState<string>('All');
     const [editingResource, setEditingResource] = useState<Patient | null>(null);
 
+    // To-Do List State
+    const [todoItems, setTodoItems] = useState<any[]>([
+        { id: '1', title: '出院準備評估會議', date: '2023-11-30', time: '10:30', location: '7A討論室', target: '張曉明 (N, SW, NU)', priority: 'High', isCompleted: false },
+        { id: '2', title: '家屬需求協商', date: '2023-11-30', time: '14:00', location: '社工會談室', target: '王美利 (N, D)', priority: 'Normal', isCompleted: false },
+        { id: '3', title: '長照2.0 專員訪視', date: '2023-12-01', time: '09:00', location: '702-1病床', target: '林大同', priority: 'High', isCompleted: false },
+    ]);
+    const [editingTodo, setEditingTodo] = useState<any | null>(null);
+    const [isTodoModalOpen, setIsTodoModalOpen] = useState(false);
+
     const handleResourceEdit = (p: Patient) => {
         // Create a shallow copy to allow local editing without affecting list immediately if needed, 
         // but for this mock we edit the reference directly or copy it.
@@ -35,6 +44,28 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
 
     const handleCloseModal = () => {
         setEditingResource(null);
+    };
+
+    // To-Do Handlers
+    const handleTodoToggle = (id: string) => {
+        setTodoItems(prev => prev.map(item => item.id === id ? { ...item, isCompleted: !item.isCompleted } : item));
+    };
+
+    const handleSaveTodo = (todo: any) => {
+        if (editingTodo) {
+            // Update existing
+            setTodoItems(prev => prev.map(item => item.id === todo.id ? todo : item));
+        } else {
+            // Create new
+            setTodoItems(prev => [...prev, { ...todo, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]);
+        }
+        setIsTodoModalOpen(false);
+        setEditingTodo(null);
+    };
+
+    const openTodoModal = (todo: any | null = null) => {
+        setEditingTodo(todo || { date: new Date().toISOString().split('T')[0], time: '12:00', priority: 'Normal', title: '', location: '', target: '' });
+        setIsTodoModalOpen(true);
     };
 
     // Mock current date for calculation consistency: 2023-11-30
@@ -269,6 +300,64 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                 </div>
             )}
 
+            {/* To-Do Edit Modal */}
+            {isTodoModalOpen && editingTodo && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm pointer-events-auto" onClick={() => setIsTodoModalOpen(false)}></div>
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 relative z-10 animate-in zoom-in duration-200 pointer-events-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <i className="fas fa-calendar-check text-sky-500"></i>
+                                {editingTodo.id ? '編輯待辦事項' : '新增待辦事項'}
+                            </h3>
+                            <button onClick={() => setIsTodoModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">事項內容 (Title)</label>
+                                <input type="text" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                    value={editingTodo.title} onChange={e => setEditingTodo({ ...editingTodo, title: e.target.value })} placeholder="例如: 跨團隊會議..." />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">日期 (Date)</label>
+                                    <input type="date" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                        value={editingTodo.date} onChange={e => setEditingTodo({ ...editingTodo, date: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">時間 (Time)</label>
+                                    <input type="time" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                        value={editingTodo.time} onChange={e => setEditingTodo({ ...editingTodo, time: e.target.value })} />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">地點 (Location)</label>
+                                <input type="text" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                    value={editingTodo.location} onChange={e => setEditingTodo({ ...editingTodo, location: e.target.value })} placeholder="例如: 7A討論室" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">對象/參與者 (Target)</label>
+                                <input type="text" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                    value={editingTodo.target} onChange={e => setEditingTodo({ ...editingTodo, target: e.target.value })} placeholder="例如: 家屬, 社工..." />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">優先級 (Priority)</label>
+                                <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500"
+                                    value={editingTodo.priority} onChange={e => setEditingTodo({ ...editingTodo, priority: e.target.value })}>
+                                    <option value="Normal">普通</option>
+                                    <option value="High">緊急/重要</option>
+                                </select>
+                            </div>
+                            <button onClick={() => handleSaveTodo(editingTodo)} className="w-full py-3 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition shadow-lg shadow-sky-600/20 mt-2">
+                                儲存事項
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* KPI Section */}
             <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
@@ -443,96 +532,57 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                     )}
                 </div>
 
-                {/* Meeting Schedule */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
-                        <span><i className="fas fa-calendar-alt text-sky-500 mr-2"></i>跨領域會議與任務看板</span>
-                        <span className="text-xs text-slate-400 font-normal">今日共 2 場會議</span>
-                    </h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-50">
-                                    <th className="pb-3 px-2">時間</th>
-                                    <th className="pb-3 px-2">個案內容</th>
-                                    <th className="pb-3 px-2">參與團隊</th>
-                                    <th className="pb-3 px-2">狀態</th>
-                                    <th className="pb-3 px-2 text-right">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                <tr className="text-sm hover:bg-slate-50/50 transition">
-                                    <td className="py-4 px-2 font-mono font-bold text-slate-500">10:30</td>
-                                    <td className="py-4 px-2">
-                                        <p className="font-bold text-slate-700">張曉明</p>
-                                        <p className="text-xs text-slate-400">出院準備評估會議</p>
-                                    </td>
-                                    <td className="py-4 px-2">
-                                        <div className="flex -space-x-2">
-                                            <div className="w-7 h-7 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold" title="護理">N</div>
-                                            <div className="w-7 h-7 rounded-full bg-green-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold" title="社工">SW</div>
-                                            <div className="w-7 h-7 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold" title="營養">NU</div>
-                                        </div>
-                                    </td>
-                                    <td className="py-4 px-2"><span className="px-2 py-0.5 rounded bg-sky-50 text-sky-600 text-[10px] font-black uppercase">進行中</span></td>
-                                    <td className="py-4 px-2 text-right">
-                                        <button className="text-sky-600 hover:text-sky-800 font-black text-[10px] uppercase tracking-widest">
-                                            進入會議 <i className="fas fa-arrow-right ml-1"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr className="text-sm hover:bg-slate-50/50 transition">
-                                    <td className="py-4 px-2 font-mono font-bold text-slate-500">14:00</td>
-                                    <td className="py-4 px-2">
-                                        <p className="font-bold text-slate-700">王美利</p>
-                                        <p className="text-xs text-slate-400">家屬需求協商</p>
-                                    </td>
-                                    <td className="py-4 px-2">
-                                        <div className="flex -space-x-2">
-                                            <div className="w-7 h-7 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">N</div>
-                                            <div className="w-7 h-7 rounded-full bg-rose-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold">D</div>
-                                        </div>
-                                    </td>
-                                    <td className="py-4 px-2"><span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px] font-black uppercase">待辦</span></td>
-                                    <td className="py-4 px-2 text-right">
-                                        <button className="text-slate-400 hover:text-slate-600 font-black text-[10px] uppercase tracking-widest">詳情</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
             </div>
 
-            {/* Side Panel: AI Suggestions */}
+            {/* Side Panel: To-Do List (Replaced AI Widget) */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
-                <div className="bg-slate-900 p-6 rounded-2xl text-white shadow-2xl relative overflow-hidden group">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-sky-500/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-sky-500/20 rounded-xl">
-                                <i className="fas fa-sparkles text-sky-400"></i>
-                            </div>
-                            <h3 className="text-lg font-bold tracking-tight">AI 資源媒合決策中心</h3>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all cursor-pointer border-l-4 border-l-sky-500">
-                                <div className="flex justify-between items-start mb-1">
-                                    <p className="text-[10px] text-sky-400 font-black uppercase tracking-widest">自動介接 HIS</p>
-                                    <span className="text-[9px] bg-white/10 px-1 rounded text-slate-400">NOW</span>
-                                </div>
-                                <h4 className="font-bold text-sm mb-1">張曉明 案: 長照 2.0 補助評估</h4>
-                                <p className="text-xs text-slate-400 leading-relaxed">偵測到住院前已有居家護理資源。AI 建議轉介長照專員 A 進行「出院即銜接」服務。</p>
-                            </div>
-                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all cursor-pointer">
-                                <p className="text-[10px] text-amber-400 font-black uppercase tracking-widest">後續電訪提醒</p>
-                                <h4 className="font-bold text-sm mb-1">林大同 案: 出院追蹤</h4>
-                                <p className="text-xs text-slate-400 leading-relaxed">社會局收案中。建議聯繫社會局社工 B 確認社區關懷訪視頻率。</p>
-                            </div>
-                        </div>
-                        <button className="w-full mt-6 py-3.5 bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-black rounded-xl transition shadow-xl shadow-sky-600/30 uppercase tracking-widest">
-                            查看全部 AI 資源建議
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i className="fas fa-clipboard-list text-sky-500"></i>
+                            待辦事項總覽
+                        </h3>
+                        <button onClick={() => openTodoModal()} className="w-8 h-8 rounded-full bg-sky-50 text-sky-600 hover:bg-sky-100 flex items-center justify-center transition">
+                            <i className="fas fa-plus"></i>
                         </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        {todoItems.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(item => (
+                            <div key={item.id} className={`p-3 rounded-xl border transition-all hover:shadow-md cursor-pointer ${item.isCompleted ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-slate-200 hover:border-sky-300'}`}
+                                onClick={() => openTodoModal(item)}>
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-1">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleTodoToggle(item.id); }}
+                                            className={`w-5 h-5 rounded border flex items-center justify-center transition ${item.isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-slate-300 hover:border-sky-500'}`}
+                                        >
+                                            {item.isCompleted && <i className="fas fa-check text-xs"></i>}
+                                        </button>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${item.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                {item.time}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400 font-mono">{item.date}</span>
+                                        </div>
+                                        <h4 className={`font-bold text-sm mb-1 ${item.isCompleted ? 'line-through text-slate-400' : 'text-slate-800'}`}>{item.title}</h4>
+                                        <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                                            <span className="flex items-center gap-1"><i className="fas fa-map-marker-alt text-slate-300"></i> {item.location}</span>
+                                            <span className="flex items-center gap-1"><i className="fas fa-user-tag text-slate-300"></i> {item.target}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {todoItems.length === 0 && (
+                            <div className="text-center py-10 text-slate-400">
+                                <i className="fas fa-clipboard-check text-4xl mb-3 opacity-20"></i>
+                                <p className="text-sm">太棒了！目前沒有待辦事項</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
