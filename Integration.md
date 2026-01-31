@@ -1015,4 +1015,6 @@ efactor: Move RBAC selection to Login Page。
 > **[User]**: 總覽儀表板為主頁面
 >
 > **[Antigravity]**: 收到。將確認並設定「總覽儀表板 (Dashboard)」為系統預設主頁。
+>
+> **[Status]**: Dashboard set as default homepage. Sidebar Brand Logo now acts as "Home" button.
 

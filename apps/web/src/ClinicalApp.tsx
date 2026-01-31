@@ -150,21 +150,75 @@ const ClinicalApp: React.FC = () => {
           </button>
         </div>
 
-        <nav className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-hide">
-          {navItems.filter(item => item.roles.includes(userRole)).map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              title={isCollapsed ? item.label : ''}
-              className={`w-full flex items-center px-4 py-3.5 rounded-xl transition-all duration-200 group relative ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
-            >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-white/20' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
-                <i className={`fas ${item.icon} text-sm`}></i>
-              </div>
-              {!isCollapsed && <span className="text-xs font-bold tracking-wide truncate">{item.label}</span>}
-              {activeTab === item.id && <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-400"></div>}
-            </button>
-          ))}
+        <nav className="flex-1 p-2 space-y-6 overflow-y-auto scrollbar-hide">
+          {/* Section: Overview */}
+          <div className="space-y-1">
+            {!isCollapsed && <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Overview</p>}
+            {[
+              { id: 'dashboard', label: '總覽儀表板', icon: 'fa-chart-pie', roles: ['Doctor', 'Nurse'] },
+              { id: 'workspace', label: '醫師決策 (Workspace)', icon: 'fa-user-md', roles: ['Doctor'] }
+            ].filter(item => item.roles.includes(userRole)).map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                title={isCollapsed ? item.label : ''}
+                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 group relative ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-white/20' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
+                  <i className={`fas ${item.icon} text-sm`}></i>
+                </div>
+                {!isCollapsed && <span className="text-xs font-bold tracking-wide truncate">{item.label}</span>}
+                {activeTab === item.id && <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-400"></div>}
+              </button>
+            ))}
+          </div>
+
+          {/* Section: Case Management */}
+          <div className="space-y-1">
+            {!isCollapsed && <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Clinical Workflow</p>}
+            {[
+              { id: 'team', label: '病房協作平台', icon: 'fa-user-nurse', roles: ['Doctor', 'Nurse'] },
+              { id: 'planning', label: '出院計畫擬定', icon: 'fa-clipboard-list', roles: ['Doctor', 'Nurse'] },
+              { id: 'followup', label: '追蹤與再入院', icon: 'fa-phone', roles: ['Doctor', 'Nurse'] }
+            ].filter(item => item.roles.includes(userRole)).map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                title={isCollapsed ? item.label : ''}
+                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 group relative ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-white/20' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
+                  <i className={`fas ${item.icon} text-sm`}></i>
+                </div>
+                {!isCollapsed && <span className="text-xs font-bold tracking-wide truncate">{item.label}</span>}
+                {activeTab === item.id && <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-400"></div>}
+              </button>
+            ))}
+          </div>
+
+          {/* Section: Tools */}
+          <div className="space-y-1">
+            {!isCollapsed && <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</p>}
+            {[
+              { id: 'analytics', label: '數據決策中心', icon: 'fa-chart-line', roles: ['Doctor', 'Nurse'] },
+              { id: 'claims', label: '申報作業 (Claims)', icon: 'fa-file-invoice', roles: ['Doctor'] },
+              { id: 'monitor', label: '臨床監測 (Monitor)', icon: 'fa-heartbeat', roles: ['Doctor', 'Nurse'] },
+              { id: 'portal', label: '家屬端預覽', icon: 'fa-mobile', roles: ['Doctor', 'Nurse'] }
+            ].filter(item => item.roles.includes(userRole)).map(item => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                title={isCollapsed ? item.label : ''}
+                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 group relative ${activeTab === item.id ? 'bg-sky-600 text-white shadow-lg shadow-sky-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'} ${isCollapsed ? 'justify-center' : 'gap-3'}`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${activeTab === item.id ? 'bg-white/20' : 'bg-slate-800 group-hover:bg-slate-700'}`}>
+                  <i className={`fas ${item.icon} text-sm`}></i>
+                </div>
+                {!isCollapsed && <span className="text-xs font-bold tracking-wide truncate">{item.label}</span>}
+                {activeTab === item.id && <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-400"></div>}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <div className="p-4 border-t border-slate-800">
