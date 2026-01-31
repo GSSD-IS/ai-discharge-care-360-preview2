@@ -314,22 +314,59 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl font-bold">S0/S1: 住院監測與篩選</h3>
-                            <button onClick={handleRunAiAnalysis} disabled={loadingAi} className="bg-sky-600 text-white px-4 py-2 rounded-lg text-xs font-bold">
-                                {loadingAi ? 'AI 運算中...' : '啟動 AI 篩選'}
+                            <button onClick={handleRunAiAnalysis} disabled={loadingAi} className="bg-sky-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-sky-700 transition shadow-lg flex items-center gap-2">
+                                {loadingAi ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-wand-magic-sparkles"></i>}
+                                {loadingAi ? 'AI 運算中...' : 'AI 自動生成照護計畫'}
                             </button>
                         </div>
-                        {aiPlan && (
-                            <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                                <h4 className="font-bold text-green-800 mb-2">AI 篩選結果: 符合收案標準</h4>
-                                <ul className="list-disc list-inside text-sm text-green-700">
-                                    {aiPlan.careProblems.map(p => <li key={p}>{p}</li>)}
-                                </ul>
-                                <button onClick={() => advanceState('S2')} className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold w-full">
-                                    確認收案 (前進 S2)
+                        {aiPlan ? (
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm animate-in fade-in zoom-in duration-300">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                                        <i className="fas fa-file-medical-alt text-teal-500"></i>
+                                        出院照護計畫 (可編輯預覽)
+                                    </h4>
+                                    <div className="flex gap-2">
+                                        <button onClick={handlePrint} className="bg-white border border-slate-300 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-50 transition">
+                                            <i className="fas fa-print mr-1"></i> 列印
+                                        </button>
+                                        <button onClick={handleSendToApp} className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition">
+                                            <i className="fas fa-paper-plane mr-1"></i> 發送
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1 block">照護問題 (Care Problems)</label>
+                                        <textarea
+                                            value={aiPlan.careProblems.join('\n')}
+                                            onChange={(e) => setAiPlan({ ...aiPlan, careProblems: e.target.value.split('\n') })}
+                                            className="w-full p-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-2 focus:ring-sky-200 outline-none min-h-[100px]"
+                                            placeholder="AI 將自動生成照護問題..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1 block">資源建議 (Suggestions)</label>
+                                        <textarea
+                                            value={aiPlan.resourceSuggestions.join('\n')}
+                                            onChange={(e) => setAiPlan({ ...aiPlan, resourceSuggestions: e.target.value.split('\n') })}
+                                            className="w-full p-3 rounded-xl border border-slate-200 text-sm font-medium focus:ring-2 focus:ring-sky-200 outline-none min-h-[80px]"
+                                            placeholder="AI 將自動生成資源建議..."
+                                        />
+                                    </div>
+                                </div>
+
+                                <button onClick={() => advanceState('S2')} className="mt-6 bg-teal-600 text-white px-6 py-3 rounded-xl text-sm font-bold w-full hover:bg-teal-700 transition shadow-lg">
+                                    確認計畫並繼續 (前往 S2)
                                 </button>
                             </div>
+                        ) : (
+                            <div className="text-center py-20 text-slate-300 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+                                <i className="fas fa-robot text-4xl mb-4 opacity-50"></i>
+                                <p>點擊上方按鈕，AI 將根據病歷與安置方向自動生成計畫</p>
+                            </div>
                         )}
-                        {!aiPlan && <div className="text-center py-20 text-slate-300">系統背景監測中... 無異常發現</div>}
 
                         <div className="mt-8 pt-8 border-t border-slate-100">
                             <h4 className="text-lg font-bold mb-4">基本資料與安置方向 (AI Context)</h4>

@@ -935,3 +935,30 @@ efactor: Move RBAC selection to Login Page。
 > 2. UI: Enhanced `Dashboard` patient cards to show detailed placement info (Caregiver type, Facility name).
 > 
 > **[Status]**: Feature "Placement UI Refinement" Completed.
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 部署確認中。
+>
+> **[DevOps]**:
+> - **Latest Commit**: `799823e` (feat: Refine Placement UI Layout and Visibility)
+> - **Git Status**: Clean, up to date with `origin/main`.
+> - **Deployment**: Triggered 2 minutes ago.
+
+> **[User]**: 出院計畫擬定頁面，啟動AI篩選 改成AI自動生成照護計畫。照護計畫可預覽修改。選擇印出出院計劃表單或自動發送到家屬端。
+> ---
+> **[Antigravity]**: 收到。將重新定義 S1/S2 的 AI 生成流程，增加「可編輯性」與「輸出彈性」。
+>
+> **[Planner]**:
+> 1.  **Enhance S1/S2**: 將「AI 篩選」升級為「AI 照護計畫生成」。
+> 2.  **Editable UI**: 生成結果 (Care Problems, Suggestions) 需改為可編輯的 Textarea 或 Input List。
+> 3.  **Action Flow**: 確認生成內容後，提供「列印」或「發送」的明確選項。
+>
+> **[Antigravity]**: 實作完成。
+>
+> **[Coder]**:
+> 1. Refactor: Renamed "AI Screening" to "AI Care Plan Generation".
+> 2. Feat: Added editable textareas for Care Problems and Resource Suggestions.
+> 3. Feat: Added instant "Print" and "Send to App" buttons in S1 (Prevention/Planning Phase).
+>
+> **[Status]**: Feature "Editable AI Care Plan" Completed.
