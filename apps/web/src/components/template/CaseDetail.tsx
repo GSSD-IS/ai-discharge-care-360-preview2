@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { type Patient, type Message, DepartmentRole, type DischargePlacement, type TeamMember } from '../../types/template';
 import DischargePlacementForm from './DischargePlacementForm';
 import { mockUsers } from '../../data/mockData';
-import { UserRole } from '../../types/saas';
 
 interface CaseDetailProps {
     patient: Patient;
