@@ -290,14 +290,86 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                         )}
 
                         {/* Education Section embedded */}
+                        {/* Education Section embedded */}
                         <div className="mt-8 pt-8 border-t border-slate-100">
-                            <h4 className="font-bold mb-4">衛教指導備註</h4>
-                            <div className="flex gap-2">
-                                <button onClick={() => handleGenerateEdu('Wound')} className="px-3 py-1 border rounded text-xs">傷口衛教</button>
-                                <button onClick={() => handleGenerateEdu('Nutrition')} className="px-3 py-1 border rounded text-xs">營養衛教</button>
-                            </div>
-                            <div className="mt-2 text-xs text-slate-500 italic">
-                                {Object.values(eduContent).map((c, i) => <div key={i} className="mb-1">{c.substring(0, 50)}...</div>)}
+                            <h4 className="font-bold mb-4 flex items-center gap-2">
+                                <i className="fas fa-chalkboard-teacher text-teal-600"></i>
+                                衛教指導與建議 (AI Generated)
+                            </h4>
+
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-black text-slate-800 flex items-center gap-2">
+                                        <i className="fas fa-wand-magic-sparkles text-teal-500"></i> AI 衛教生成
+                                    </h3>
+                                    <button onClick={() => { handleGenerateEdu('Medication'); handleGenerateEdu('HomeCare'); handleGenerateEdu('FollowUp'); }} disabled={loadingAi} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                                        <i className={`fas fa-rotate ${loadingAi ? 'fa-spin' : ''}`}></i> 重新生成
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Card 1: Medication */}
+                                    <div className="p-4 rounded-xl border-l-4 border-l-emerald-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative" onClick={() => handleGenerateEdu('Medication')}>
+                                        <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-emerald-500 cursor-pointer"></i>
+                                        <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+                                            <i className="fas fa-pills text-emerald-500"></i> 藥物使用說明
+                                        </h4>
+                                        <div className="text-xs text-slate-500 leading-relaxed font-medium">
+                                            {eduContent['Medication'] ? <p>{eduContent['Medication']}</p> : (
+                                                <>
+                                                    <p className="font-bold text-slate-700 mb-1">抗凝血劑 (Warfarin)</p>
+                                                    <p>每日固定時間服用。注意牙齦出血或異常瘀青，避免食用過量深綠色蔬菜。</p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Card 2: Home Care */}
+                                    <div className="p-4 rounded-xl border-l-4 border-l-sky-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative" onClick={() => handleGenerateEdu('HomeCare')}>
+                                        <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-sky-500 cursor-pointer"></i>
+                                        <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+                                            <i className="fas fa-house-medical text-sky-500"></i> 居家照護重點
+                                        </h4>
+                                        <div className="text-xs text-slate-500 leading-relaxed space-y-1">
+                                            {eduContent['HomeCare'] ? <p>{eduContent['HomeCare']}</p> : (
+                                                <ul className="list-disc list-inside">
+                                                    <li>傷口保持乾燥，每日觀察有無紅腫。</li>
+                                                    <li>氧氣流量設定為 2L/min，遠離煙火。</li>
+                                                    <li>每 2 小時協助翻身拍背一次。</li>
+                                                </ul>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Card 3: Follow Up */}
+                                    <div className="p-4 rounded-xl border-l-4 border-l-amber-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative" onClick={() => handleGenerateEdu('FollowUp')}>
+                                        <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-amber-500 cursor-pointer"></i>
+                                        <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
+                                            <i className="fas fa-calendar-check text-amber-500"></i> 預約回診提醒
+                                        </h4>
+                                        <div className="text-xs text-slate-500 leading-relaxed space-y-1">
+                                            {eduContent['FollowUp'] ? <p>{eduContent['FollowUp']}</p> : (
+                                                <div className="flex items-center gap-3 mt-3">
+                                                    <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex flex-col items-center justify-center leading-none shadow-sm">
+                                                        <span className="text-[8px] font-bold uppercase">Dec</span>
+                                                        <span className="text-sm font-black">02</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-slate-700 text-xs">心臟內科門診</p>
+                                                        <p className="text-[10px] text-slate-400">2023-12-02 09:30 AM</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 space-y-3">
+                                    <button className="w-full py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow-xl shadow-teal-700/20 font-black text-sm flex items-center justify-center gap-2 transition transform active:scale-95">
+                                        <i className="fas fa-wand-magic-sparkles"></i>
+                                        確認並生成正式衛教單張
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

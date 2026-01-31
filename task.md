@@ -93,6 +93,15 @@
     - [x] 實作「醫師/護理師」角色切換器.
     - [x] 限制「醫師決策 (Workspace)」與「申報 (Claims)」僅醫師可見.
 
+- [x] **5.8 衛教介面重構 (Refactor AI Education)** <!-- id: 5.8 -->
+    - [x] 從 CaseDetail 移除 AI 衛教生成卡片.
+    - [x] 將 AI 衛教生成介面整合至 DischargePlanningHub (S2 評估階段).
+
+- [x] **5.9 出院安置方向與進度 (Discharge Placement Logic)** <!-- id: 5.9 -->
+    - [x] 定義新資料結構 (Home, RCW, Facility, Transfer) 於 `types/template.ts`.
+    - [x] 在 `CaseDetail` 新增「出院安置方向」編輯卡片.
+    - [x] 更新 `Dashboard` 顯示個案安置進度摘要.
+
 - [x] **5.6 介面在地化 (Localization)** <!-- id: 5.6 -->
     - [x] SaaS 後台: 營運儀表板、租戶列表、租戶詳情中文化.
     - [x] 登入頁面: 歡迎詞與表單中文化.

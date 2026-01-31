@@ -95,6 +95,7 @@ export interface Patient {
     matchedResources?: MatchedResource[];
     primaryCaregiver?: string;
     primaryContact?: string;
+    dischargePlacement?: DischargePlacement;
 }
 
 export interface FollowUpRecord {
@@ -144,4 +145,53 @@ export interface EducationModule {
     description: string;
     progress: number;
     type: 'Video' | 'Document';
+}
+
+// --- Discharge Placement Types ---
+
+export type CaregiverType = 'Family' | 'PrivateNurse' | 'ForeignCaregiver' | 'Other';
+export type MedicalDevice = 'Suction' | 'OxygenGen' | 'Ventilator' | 'Oximeter' | 'Other';
+export type GeneralDevice = 'Wheelchair' | 'Walker' | 'Crutches' | 'CommodeChair' | 'ShowerChair' | 'Other';
+export type TransportType = 'Self' | 'AccessibleCar' | 'Ambulance';
+export type TubeCareType = 'HomeNursing' | 'OPD';
+
+export interface HomeCarePrep {
+    caregiver: CaregiverType;
+    medicalDevices: MedicalDevice[];
+    generalDevices: GeneralDevice[];
+    transport: TransportType;
+    tubeCare: TubeCareType;
+    otherDeviceNote?: string;
+}
+
+export interface FacilityPrep {
+    type: 'NursingHome' | 'CareCenter';
+    name: string;
+    status: 'Searching' | 'Examining' | 'Waiting';
+}
+
+export interface TransferPrep {
+    type: 'RCW' | 'PAC' | 'RehabWard' | 'HospiceWard' | 'GeneralHospital';
+    name: string;
+}
+
+export type PlacementType =
+    | 'Home'
+    | 'RCW' // 呼吸照護 (Respiratory Care Ward - 4階) -> In text user said "轉介呼吸4階" which usually means RCW or Home Respiratory. Context implies external unit.
+    | 'HomeHospice'
+    | 'Facility'
+    | 'Transfer';
+
+export interface DischargePlacement {
+    type: PlacementType;
+    // 1-1. 返家
+    homeCare?: HomeCarePrep;
+    // 1-2. 轉介呼吸4階 (Unit Name)
+    rcwUnitName?: string;
+    // 1-3. 轉介居家安寧 (Unit Name)
+    homeHospiceUnitName?: string;
+    // 2-1. 機構
+    facility?: FacilityPrep;
+    // 2-2. 轉院
+    transfer?: TransferPrep;
 }

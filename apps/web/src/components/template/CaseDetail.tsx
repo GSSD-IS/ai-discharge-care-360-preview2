@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { type Patient, type Message, DepartmentRole } from '../../types/template';
-import { generateDischargeSummary, assessRiskAI } from '../../services/geminiService';
+import { type Patient, type Message, DepartmentRole, type DischargePlacement } from '../../types/template';
+import DischargePlacementForm from './DischargePlacementForm';
 
 interface CaseDetailProps {
     patient: Patient;
@@ -8,12 +8,22 @@ interface CaseDetailProps {
 }
 
 const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [aiSummary, setAiSummary] = useState<string>('');
-    const [riskResult, setRiskResult] = useState<{ riskLevel: string; score: number; reasoning: string } | null>(null);
     const [loading, setLoading] = useState(false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showEmr, setShowEmr] = useState(false);
+
+    // Placement State
+    const [placementData, setPlacementData] = useState<DischargePlacement | undefined>(patient.dischargePlacement);
+    const [isEditingPlacement, setIsEditingPlacement] = useState(false);
+
+    const handleSavePlacement = (data: DischargePlacement) => {
+        setPlacementData(data);
+        setIsEditingPlacement(false);
+        // Mock persistence
+        patient.dischargePlacement = data;
+        console.log("Saved Placement:", data);
+    };
+
     // ...
     const [messages, setMessages] = useState<Message[]>([
         // ... (keep messages default state)
@@ -24,23 +34,7 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
     ]);
     const [newMessage, setNewMessage] = useState('');
 
-    const currentRiskScore = riskResult ? riskResult.score : patient.riskScore;
-
-    React.useEffect(() => {
-        if (aiSummary) console.log("AI Summary Generated:", aiSummary);
-    }, [aiSummary]);
-
-    const handleGenerateSummary = async () => {
-        setLoading(true);
-        // Parallel execution
-        const [summary, risk] = await Promise.all([
-            generateDischargeSummary(patient),
-            assessRiskAI(patient)
-        ]);
-        setAiSummary(summary);
-        setRiskResult(risk);
-        setLoading(false);
-    };
+    const currentRiskScore = patient.riskScore;
 
     const sendMessage = () => {
         if (!newMessage.trim()) return;
@@ -113,9 +107,11 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                     </button>
                     <button
                         onClick={handlePublish}
-                        className="px-5 py-2.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition shadow-lg shadow-teal-600/20 flex items-center gap-2"
+                        disabled={loading}
+                        className="px-5 py-2.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition shadow-lg shadow-teal-600/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <i className="fas fa-share-nodes"></i> 發送轉介單
+                        {loading ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-share-nodes"></i>}
+                        {loading ? '發送中...' : '發送轉介單'}
                     </button>
                 </div>
             </div>
@@ -156,6 +152,65 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                         </div>
                     </div>
 
+
+                    // ... inside Left Column ...
+                    {/* Discharge Placement Card */}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative group">
+                        <div className="flex justify-between items-start mb-4">
+                            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                <i className="fas fa-map-signs text-sky-500"></i> 安置方向評估
+                            </h3>
+                            <button onClick={() => setIsEditingPlacement(!isEditingPlacement)} className="text-xs text-slate-400 hover:text-sky-600">
+                                <i className="fas fa-edit"></i> {isEditingPlacement ? '取消' : '編輯'}
+                            </button>
+                        </div>
+
+                        {isEditingPlacement ? (
+                            <DischargePlacementForm initialData={placementData} onSave={handleSavePlacement} />
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">
+                                        {{
+                                            Home: '返家照護',
+                                            RCW: '呼吸照護 (RCW)',
+                                            HomeHospice: '居家安寧',
+                                            Facility: '機構安置',
+                                            Transfer: '轉院'
+                                        }[placementData?.type || 'Home']}
+                                    </span>
+                                    {placementData?.type === 'Home' && (
+                                        <div className="flex gap-1">
+                                            {placementData.homeCare?.caregiver && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{
+                                                { Family: '家人', PrivateNurse: '自費看護', ForeignCaregiver: '外籍看護', Other: '其他' }[placementData.homeCare.caregiver]
+                                            }</span>}
+                                            {placementData.homeCare?.transport && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{
+                                                { Self: '自行', AccessibleCar: '無障礙', Ambulance: '救護車' }[placementData.homeCare.transport]
+                                            }</span>}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="text-xs text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                    {placementData?.type === 'Home' ? (
+                                        <ul className="space-y-1">
+                                            <li>• 輔具: {placementData.homeCare?.medicalDevices.length ? placementData.homeCare.medicalDevices.join(', ') : '無'}</li>
+                                            <li>• 管路: {placementData.homeCare?.tubeCare === 'HomeNursing' ? '轉介居護' : '門診更換'}</li>
+                                        </ul>
+                                    ) : placementData?.type === 'Facility' ? (
+                                        <ul className="space-y-1">
+                                            <li>• 類型: {placementData.facility?.type === 'NursingHome' ? '護理之家' : '養護中心'}</li>
+                                            <li>• 狀態: {placementData.facility?.status}</li>
+                                            <li>• 單位: {placementData.facility?.name || '尚未指定'}</li>
+                                        </ul>
+                                    ) : (
+                                        <p>單位: {placementData?.rcwUnitName || placementData?.homeHospiceUnitName || placementData?.transfer?.name || '未指定'}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Risk Alert (Moved to bottom left) */}
                     <div className={`p-5 rounded-2xl border-l-4 shadow-sm ${currentRiskScore >= 70 ? 'bg-red-50 border-red-500' : 'bg-teal-50 border-teal-500'}`}>
                         <div className="flex items-start gap-3">
@@ -178,7 +233,7 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                 </div>
 
                 {/* Center Column: Team Communication */}
-                <div className="col-span-12 lg:col-span-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div className="col-span-12 lg:col-span-9 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="p-5 border-b border-slate-100 flex justify-between items-center">
                         <h3 className="font-black text-slate-800 flex items-center gap-2">
                             <i className="fas fa-comments text-teal-600"></i> 跨團隊溝通區
@@ -232,83 +287,6 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Right Column: AI Education Generation (New Style) */}
-                <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-full">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-black text-slate-800 flex items-center gap-2">
-                                <i className="fas fa-wand-magic-sparkles text-teal-500"></i> AI 衛教生成
-                            </h3>
-                            <button onClick={handleGenerateSummary} disabled={loading} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
-                                <i className={`fas fa-rotate ${loading ? 'fa-spin' : ''}`}></i> 重新生成
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Card 1: Medication */}
-                            <div className="p-4 rounded-xl border-l-4 border-l-emerald-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative">
-                                <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-emerald-500 cursor-pointer"></i>
-                                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                                    <i className="fas fa-pills text-emerald-500"></i> 藥物使用說明
-                                </h4>
-                                <div className="text-xs text-slate-500 leading-relaxed font-medium">
-                                    <p className="font-bold text-slate-700 mb-1">抗凝血劑 (Warfarin)</p>
-                                    <p>每日固定時間服用。注意牙齦出血或異常瘀青，避免食用過量深綠色蔬菜。</p>
-                                </div>
-                            </div>
-
-                            {/* Card 2: Home Care */}
-                            <div className="p-4 rounded-xl border-l-4 border-l-sky-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative">
-                                <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-sky-500 cursor-pointer"></i>
-                                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                                    <i className="fas fa-house-medical text-sky-500"></i> 居家照護重點
-                                </h4>
-                                <ul className="text-xs text-slate-500 leading-relaxed list-disc list-inside space-y-1">
-                                    <li>傷口保持乾燥，每日觀察有無紅腫。</li>
-                                    <li>氧氣流量設定為 2L/min，遠離煙火。</li>
-                                    <li>每 2 小時協助翻身拍背一次。</li>
-                                </ul>
-                            </div>
-
-                            {/* Card 3: Follow Up */}
-                            <div className="p-4 rounded-xl border-l-4 border-l-amber-500 bg-slate-50 hover:bg-white hover:shadow-md transition border border-slate-100 group cursor-pointer relative">
-                                <i className="fas fa-pen absolute right-4 top-4 text-slate-300 hover:text-amber-500 cursor-pointer"></i>
-                                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                                    <i className="fas fa-calendar-check text-amber-500"></i> 預約回診提醒
-                                </h4>
-                                <div className="flex items-center gap-3 mt-3">
-                                    <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex flex-col items-center justify-center leading-none shadow-sm">
-                                        <span className="text-[8px] font-bold uppercase">Dec</span>
-                                        <span className="text-sm font-black">02</span>
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-700 text-xs">心臟內科門診</p>
-                                        <p className="text-[10px] text-slate-400">2023-12-02 09:30 AM</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 space-y-3">
-                            <button className="w-full py-4 bg-teal-700 hover:bg-teal-800 text-white rounded-xl shadow-xl shadow-teal-700/20 font-black text-sm flex items-center justify-center gap-2 transition transform active:scale-95">
-                                <i className="fas fa-wand-magic-sparkles"></i> 生成衛教單
-                            </button>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
-                                    <i className="fas fa-comment-sms"></i> 傳送訊息個案
-                                </button>
-                                <button className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
-                                    <i className="fas fa-print"></i> 列印衛教單張
-                                </button>
-                            </div>
-                        </div>
-
-                        <button className="w-full mt-6 py-2 border border-dashed border-slate-300 text-slate-400 rounded-xl text-xs font-bold hover:border-slate-400 hover:text-slate-500 transition">
-                            <i className="fas fa-plus mr-1"></i> 新增自定義衛教模組
-                        </button>
                     </div>
                 </div>
             </div>

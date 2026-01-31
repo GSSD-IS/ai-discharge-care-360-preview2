@@ -861,3 +861,14 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Result]**: 通過 UI Build 驗證。
 > 
 > **[Action]**: 部署更新並標記版本 2.0-ltc-hitl。
+
+
+> **[UI_UX_Designer]**: 完成衛教介面重構 (Refactor AI Education Interface)。
+> 
+> **[Change Log]**:
+> 1. **CaseDetail**: 移除右側欄位，擴展中間「團隊溝通區」至 9 欄寬。
+> 2. **DischargePlanningHub**: 將 AI 衛教生成卡片 (藥物/居家/回診) 整合至 S2 評估階段，符合臨床作業流程。
+> 
+> **[Validation]**: 執行 Build 驗證通過，功能正常遷移。
+> 
+> **[Result]**: 介面邏輯更清晰，避免詳情頁功能過載。
