@@ -1007,3 +1007,12 @@ efactor: Move RBAC selection to Login Page。
 > **[Antigravity]**: 收到。將於 Ward Team Hub 實作進階團隊溝通功能：
 > 1. **Auto-Add**: 自動帶入主治醫師與關聯照會單位。
 > 2. **Manual-Add**: 模擬 HIS 院內通訊錄搜尋與加入成員功能。
+>
+> **[Status]**: Team Communication Interface Implemented (Auto-Join + Search).
+
+> **[User]**: 部屬好了嗎
+>
+> **[User]**: 總覽儀表板為主頁面
+>
+> **[Antigravity]**: 收到。將確認並設定「總覽儀表板 (Dashboard)」為系統預設主頁。
+

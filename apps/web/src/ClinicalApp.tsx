@@ -129,18 +129,18 @@ const ClinicalApp: React.FC = () => {
       <aside className={`bg-slate-900 text-white flex flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-20' : 'w-64'}`}>
         <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
           {!isCollapsed && (
-            <div>
-              <h1 className="text-xl font-black tracking-tighter flex items-center gap-2">
+            <button onClick={() => setActiveTab('dashboard')} className="text-left focus:outline-none group">
+              <h1 className="text-xl font-black tracking-tighter flex items-center gap-2 group-hover:opacity-90 transition">
                 <span className="text-xl text-sky-500"><i className="fas fa-hospital-user"></i></span>
                 <span className="truncate">Care 360</span>
               </h1>
-              <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold truncate">Smart Care Transition</p>
-            </div>
+              <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold truncate group-hover:text-slate-300 transition">Smart Care Transition</p>
+            </button>
           )}
           {isCollapsed && (
-            <div className="w-full flex justify-center">
+            <button onClick={() => setActiveTab('dashboard')} className="w-full flex justify-center hover:opacity-80 transition">
               <span className="text-2xl text-sky-500"><i className="fas fa-hospital-user"></i></span>
-            </div>
+            </button>
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
