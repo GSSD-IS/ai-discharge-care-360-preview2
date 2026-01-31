@@ -962,3 +962,7 @@ efactor: Move RBAC selection to Login Page。
 > 3. Feat: Added instant "Print" and "Send to App" buttons in S1 (Prevention/Planning Phase).
 >
 > **[Status]**: Feature "Editable AI Care Plan" Completed.
+
+> **[User]**: 長照3.0雙軌轉介平台拿掉
+> ---
+> **[Antigravity]**: 收到。將移除 DischargePlanningHub 頁面的標題「長照 3.0 雙軌轉介平台」。
