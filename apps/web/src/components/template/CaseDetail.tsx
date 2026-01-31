@@ -1,3 +1,5 @@
+
+import React, { useState } from 'react';
 import { type Patient, type Message, DepartmentRole, type DischargePlacement, type TeamMember } from '../../types/template';
 import DischargePlacementForm from './DischargePlacementForm';
 import { mockUsers } from '../../data/mockData';
@@ -25,9 +27,10 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
         console.log("Saved Placement:", data);
     };
 
-    // ...
+    const currentRiskScore = patient.riskScore;
+
+    // Messages State
     const [messages, setMessages] = useState<Message[]>([
-        // ... (keep messages default state)
         { id: '1', sender: '蔡社工', role: 'Social Worker', dept: DepartmentRole.SocialWorker, content: '患者家屬表示希望申請輔具，已聯繫長照中心。', timestamp: '2023-11-23 14:20' },
         { id: '2', sender: '你', role: 'Nurse', dept: DepartmentRole.Nurse, content: '收到。目前個案安全用藥教育已開始，重點放在減少跌倒風險。', timestamp: '2023-11-23 15:10' },
         { id: '3', sender: '王藥師', role: 'Pharmacist', dept: DepartmentRole.Pharmacist, content: '已核對三高藥物清單，提醒病患 Warfarin 需注意交互作用。', timestamp: '2023-11-23 16:45' },
@@ -110,22 +113,6 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
         setNewMessage('');
     };
 
-    const currentRiskScore = patient.riskScore;
-
-    const sendMessage = () => {
-        if (!newMessage.trim()) return;
-        const msg: Message = {
-            id: Date.now().toString(),
-            sender: '你',
-            role: 'Nurse',
-            dept: DepartmentRole.Nurse,
-            content: newMessage,
-            timestamp: new Date().toLocaleString()
-        };
-        setMessages([...messages, msg]);
-        setNewMessage('');
-    };
-
     // Only filtering logic if needed, currently showing all in one flow
     const filteredMessages = messages;
 
@@ -143,7 +130,6 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
             {/* EMR Modal Overlay (Keep existing logic) */}
             {showEmr && (
                 <div className="absolute inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-8">
-                    {/* ... keep internal modal content same or simplified for brevity in this replace ... */}
                     <div className="bg-white w-full max-w-4xl h-full max-h-[80vh] rounded-2xl shadow-2xl flex flex-col p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold">電子病歷調閱</h3>
@@ -228,8 +214,6 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                         </div>
                     </div>
 
-
-                    // ... inside Left Column ...
                     {/* Discharge Placement Card */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative group">
                         <div className="flex justify-between items-start mb-4">
@@ -247,21 +231,23 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     <span className="px-2.5 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm">
-                                        {{
-                                            Home: '返家照護',
-                                            RCW: '呼吸照護 (RCW)',
-                                            HomeHospice: '居家安寧',
-                                            Facility: '機構安置',
-                                            Transfer: '轉院'
-                                        }[placementData?.type || 'Home']}
+                                        {
+                                            {
+                                                Home: '返家照護',
+                                                RCW: '呼吸照護 (RCW)',
+                                                HomeHospice: '居家安寧',
+                                                Facility: '機構安置',
+                                                Transfer: '轉院'
+                                            }[placementData?.type || 'Home']
+                                        }
                                     </span>
                                     {placementData?.type === 'Home' && (
                                         <div className="flex gap-1">
                                             {placementData.homeCare?.caregiver && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{
-                                                { Family: '家人', PrivateNurse: '自費看護', ForeignCaregiver: '外籍看護', Other: '其他' }[placementData.homeCare.caregiver]
+                                                ({ Family: '家人', PrivateNurse: '自費看護', ForeignCaregiver: '外籍看護', Other: '其他' } as any)[placementData.homeCare.caregiver]
                                             }</span>}
                                             {placementData.homeCare?.transport && <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{
-                                                { Self: '自行', AccessibleCar: '無障礙', Ambulance: '救護車' }[placementData.homeCare.transport]
+                                                ({ Self: '自行', AccessibleCar: '無障礙', Ambulance: '救護車' } as any)[placementData.homeCare.transport]
                                             }</span>}
                                         </div>
                                     )}
@@ -285,44 +271,58 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                                 </div>
                             </div>
                         )}
+
+                        <div className="mt-4 grid grid-cols-5 gap-1">
+                            {(['Home', 'RCW', 'HomeHospice', 'Facility', 'Transfer'] as const).map(type => (
+                                <div key={type} className={`border rounded-lg p-1 flex flex-col items-center justify-center ${placementData?.type === type ? 'border-teal-500 bg-teal-50' : 'border-slate-100 bg-slate-50'}`}>
+                                    <div className={`w-2 h-2 rounded-full mb-1 ${placementData?.type === type ? 'bg-teal-500' : 'bg-slate-300'}`}></div>
+                                    <span className="text-[8px] font-bold text-slate-500">
+                                        {
+                                            {
+                                                Home: '返家',
+                                                RCW: 'RCW',
+                                                HomeHospice: '安寧',
+                                                Facility: '機構',
+                                                Transfer: '轉院'
+                                            }[type]
+                                        }
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
-                    {(['Home', 'RCW', 'HomeHospice', 'Facility', 'Transfer'] as const).map(type => (
-                        <div key={type} className={`border rounded-xl p-3 ${placementData?.type === type ? 'border-teal-500 bg-teal-50' : 'border-slate-200 bg-slate-50'}`}>
-                            <div className="flex justify-between items-center mb-1">
-                                <span className={`text-xs font-bold ${placementData?.type === type ? 'text-teal-700' : 'text-slate-500'}`}>
-                                    {
-                                        {
-                                            Home: '返家照護',
-                                            RCW: '呼吸照護',
-                                            HomeHospice: '居家安寧',
-                                            Facility: '機構安置',
-                                            Transfer: '轉院治療'
-                                        }[type]
-                                    }
-                                </span>
-                                {placementData?.type === type && <i className="fas fa-check-circle text-teal-500"></i>}
+                    {/* Risk Alert */}
+                    <div className={`p-5 rounded-2xl border-l-4 shadow-sm ${currentRiskScore >= 70 ? 'bg-red-50 border-red-500' : 'bg-teal-50 border-teal-500'}`}>
+                        <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg ${currentRiskScore >= 70 ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'}`}>
+                                <i className="fas fa-triangle-exclamation text-xl"></i>
                             </div>
-                            {placementData?.type === type && type === 'Home' && placementData.homeCare && (
-                                <div className="text-[10px] text-slate-600 space-y-0.5 mt-2">
-                                    <p>• 照顧者: {({ Family: '家屬', PrivateNurse: '私人看護', ForeignCaregiver: '外籍看護', Other: '其他' } as any)[placementData.homeCare.caregiver]}</p>
-                                    <p>• 交通: {({ Self: '自行', AccessibleCar: '復康巴士', Ambulance: '救護車' } as any)[placementData.homeCare.transport]}</p>
-                                </div>
-                            )}
+                            <div>
+                                <h4 className={`font-black text-sm mb-1 ${currentRiskScore >= 70 ? 'text-red-800' : 'text-teal-800'}`}>
+                                    AI 出院風險預警
+                                </h4>
+                                <p className={`text-lg font-black mb-1 ${currentRiskScore >= 70 ? 'text-red-600' : 'text-teal-600'}`}>
+                                    {currentRiskScore >= 70 ? '高度再入院風險' : '中低度再入院風險'}
+                                </p>
+                                <p className={`text-xs leading-relaxed ${currentRiskScore >= 70 ? 'text-red-700' : 'text-teal-700'}`}>
+                                    建議加強居家照護者與患者的防跌衛教指導。
+                                </p>
+                            </div>
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
 
-            <div className="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden h-[600px]">
-                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <div>
+                </div>
+
+                {/* Right Column: Chat */}
+                <div className="col-span-12 lg:col-span-9 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="p-5 border-b border-slate-100 flex justify-between items-center">
                         <h3 className="font-black text-slate-800 flex items-center gap-2">
                             <i className="fas fa-comments text-teal-600"></i> 跨團隊溝通區
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2">
                             <div className="flex -space-x-2">
-                                {teamMembers.slice(0, 5).map((m: TeamMember) => (
+                                {teamMembers.slice(0, 5).map(m => (
                                     <div key={m.id} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 overflow-hidden" title={m.name}>
                                         {m.avatar?.startsWith('http') ? <img src={m.avatar} alt={m.name} /> : <i className="fas fa-user"></i>}
                                     </div>
@@ -340,173 +340,101 @@ const CaseDetail: React.FC<CaseDetailProps> = ({ patient, onBack }) => {
                             </button>
                         </div>
                     </div>
-                    <button className="text-slate-400 hover:text-slate-600"><i className="fas fa-ellipsis-v"></i></button>
-                </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30">
-                    {messages.map((msg: Message) => (
-                        <div key={msg.id} className={`flex gap-3 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
-                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-sm overflow-hidden ${msg.sender === '你' ? 'bg-teal-600' : 'bg-indigo-500'}`}>
-                                {msg.sender === '你' ? <i className="fas fa-user-nurse"></i> : <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender}`} alt="avatar" />}
-                            </div>
-                            <div className={`max-w-[85%] ${msg.sender === '你' ? 'items-end' : ''}`}>
-                                <div className={`flex items-baseline gap-2 mb-1 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-sm font-bold text-slate-800">{msg.sender}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${msg.sender === '你' ? 'bg-teal-50 text-teal-600' : 'bg-indigo-50 text-indigo-600'}`}>{msg.role}</span>
-                                    <span className="text-[10px] text-slate-400">{msg.timestamp.split(' ')[1]}</span>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+                        {filteredMessages.map((msg) => (
+                            <div key={msg.id} className={`flex gap-4 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
+                                <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-sm overflow-hidden ${msg.sender === '你' ? 'bg-teal-600' : 'bg-indigo-500'}`}>
+                                    {msg.sender === '你' ? <i className="fas fa-user-nurse"></i> : <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender}`} alt="avatar" />}
                                 </div>
-                                <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === '你' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-white text-slate-600 border border-slate-100 rounded-tl-none'}`}>
-                                    {msg.content}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Risk Alert (Moved to bottom left) */}
-                <div className={`p-5 rounded-2xl border-l-4 shadow-sm ${currentRiskScore >= 70 ? 'bg-red-50 border-red-500' : 'bg-teal-50 border-teal-500'}`}>
-                    <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${currentRiskScore >= 70 ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'}`}>
-                            <i className="fas fa-triangle-exclamation text-xl"></i>
-                        </div>
-                        <div>
-                            <h4 className={`font-black text-sm mb-1 ${currentRiskScore >= 70 ? 'text-red-800' : 'text-teal-800'}`}>
-                                AI 出院風險預警
-                            </h4>
-                            <p className={`text-lg font-black mb-1 ${currentRiskScore >= 70 ? 'text-red-600' : 'text-teal-600'}`}>
-                                {currentRiskScore >= 70 ? '高度再入院風險' : '中低度再入院風險'}
-                            </p>
-                            <p className={`text-xs leading-relaxed ${currentRiskScore >= 70 ? 'text-red-700' : 'text-teal-700'}`}>
-                                建議加強居家照護者與患者的防跌衛教指導。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Center Column: Team Communication */}
-            <div className="col-span-12 lg:col-span-9 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-black text-slate-800 flex items-center gap-2">
-                        <i className="fas fa-comments text-teal-600"></i> 跨團隊溝通區
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <div className="flex -space-x-2">
-                            {teamMembers.slice(0, 5).map(m => (
-                                <div key={m.id} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 overflow-hidden" title={m.name}>
-                                    {m.avatar?.startsWith('http') ? <img src={m.avatar} alt={m.name} /> : <i className="fas fa-user"></i>}
-                                </div>
-                            ))}
-                            {teamMembers.length > 5 && (
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">+{teamMembers.length - 5}</div>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => setShowAddMemberModal(true)}
-                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-teal-50 text-slate-400 hover:text-teal-600 flex items-center justify-center transition border border-dashed border-slate-300"
-                            title="邀請成員"
-                        >
-                            <i className="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
-                    {filteredMessages.map((msg) => (
-                        <div key={msg.id} className={`flex gap-4 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
-                            <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white shadow-sm overflow-hidden ${msg.sender === '你' ? 'bg-teal-600' : 'bg-indigo-500'}`}>
-                                {msg.sender === '你' ? <i className="fas fa-user-nurse"></i> : <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${msg.sender}`} alt="avatar" />}
-                            </div>
-                            <div className={`max-w-[85%] ${msg.sender === '你' ? 'items-end' : ''}`}>
-                                <div className={`flex items-baseline gap-2 mb-1 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
-                                    <span className="text-sm font-bold text-slate-800">{msg.sender}</span>
-                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${msg.sender === '你' ? 'bg-teal-50 text-teal-600' : 'bg-indigo-50 text-indigo-600'}`}>{msg.role}</span>
-                                    <span className="text-[10px] text-slate-400">{msg.timestamp.split(' ')[1]}</span>
-                                </div>
-                                <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === '你' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-white text-slate-600 border border-slate-100 rounded-tl-none'}`}>
-                                    {msg.content}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="p-4 bg-white border-t border-slate-100">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder="輸入小組溝通內容..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-24 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                        />
-                        <div className="absolute right-2 top-2 flex gap-1">
-                            <button className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
-                                <i className="fas fa-paperclip"></i>
-                            </button>
-                            <button onClick={sendMessage} className="w-8 h-8 flex items-center justify-center bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-md">
-                                <i className="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            {/* Add Member Modal */ }
-    {
-        showAddMemberModal && (
-            <div className="absolute inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col p-6 animate-in zoom-in duration-200">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold">邀請新成員 (HIS)</h3>
-                        <button onClick={() => setShowAddMemberModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
-                            <i className="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <div className="relative mb-4">
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="搜尋姓名、工號或職稱..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                        />
-                        <i className="fas fa-search absolute left-3 top-3.5 text-slate-400"></i>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2">
-                        <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">建議聯絡人</p>
-                        {mockUsers
-                            .filter(u => u.name.includes(searchQuery) || u.role.includes(searchQuery))
-                            .map(user => (
-                                <button
-                                    key={user.id}
-                                    onClick={() => handleAddMember(user)}
-                                    className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl group transition text-left"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
-                                            <i className="fas fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-slate-800">{user.name}</p>
-                                            <p className="text-xs text-slate-500">{user.role} • {user.email}</p>
-                                        </div>
+                                <div className={`max-w-[85%] ${msg.sender === '你' ? 'items-end' : ''}`}>
+                                    <div className={`flex items-baseline gap-2 mb-1 ${msg.sender === '你' ? 'flex-row-reverse' : ''}`}>
+                                        <span className="text-sm font-bold text-slate-800">{msg.sender}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${msg.sender === '你' ? 'bg-teal-50 text-teal-600' : 'bg-indigo-50 text-indigo-600'}`}>{msg.role}</span>
+                                        <span className="text-[10px] text-slate-400">{msg.timestamp.split(' ')[1]}</span>
                                     </div>
-                                    <span className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-300 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white group-hover:border-teal-500 transition shadow-sm">
-                                        <i className="fas fa-plus"></i>
-                                    </span>
+                                    <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === '你' ? 'bg-teal-600 text-white rounded-tr-none' : 'bg-white text-slate-600 border border-slate-100 rounded-tl-none'}`}>
+                                        {msg.content}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="p-4 bg-white border-t border-slate-100">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                                placeholder="輸入小組溝通內容..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-24 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                            />
+                            <div className="absolute right-2 top-2 flex gap-1">
+                                <button className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+                                    <i className="fas fa-paperclip"></i>
                                 </button>
-                            ))}
+                                <button onClick={sendMessage} className="w-8 h-8 flex items-center justify-center bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-md">
+                                    <i className="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        )
-    }
-        </div >
+
+            {/* Add Member Modal */}
+            {showAddMemberModal && (
+                <div className="absolute inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl flex flex-col p-6 animate-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold">邀請新成員 (HIS)</h3>
+                            <button onClick={() => setShowAddMemberModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div className="relative mb-4">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="搜尋姓名、工號或職稱..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            />
+                            <i className="fas fa-search absolute left-3 top-3.5 text-slate-400"></i>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto max-h-[300px] space-y-2">
+                            <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">建議聯絡人</p>
+                            {mockUsers
+                                .filter(u => u.name.includes(searchQuery) || u.role.includes(searchQuery))
+                                .map(user => (
+                                    <button
+                                        key={user.id}
+                                        onClick={() => handleAddMember(user)}
+                                        className="w-full flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl group transition text-left"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+                                                <i className="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800">{user.name}</p>
+                                                <p className="text-xs text-slate-500">{user.role} • {user.email}</p>
+                                            </div>
+                                        </div>
+                                        <span className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-300 flex items-center justify-center group-hover:bg-teal-500 group-hover:text-white group-hover:border-teal-500 transition shadow-sm">
+                                            <i className="fas fa-plus"></i>
+                                        </span>
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
