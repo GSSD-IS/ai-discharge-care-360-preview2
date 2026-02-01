@@ -1090,6 +1090,20 @@ efactor: Move RBAC selection to Login Page。
 > ---
 > **[System]**: 是的，已部署完成。Bento Grid UI 已上線。
 
+> **[User]**: 總覽儀表板內的住院病人總數改成收案病人總數
+> ---
+> **[System]**: 已將 Dashboard 中的『住院病患總數』標籤更新為『收案病人總數』。
+
+> **[User]**: 病床佔有率改成符合PAC條件個案 分疾病 腦中風/創傷性腦損傷/骨折/衰弱高齡
+> ---
+> **[System]**: 已將 Dashboard 中的『病床佔有率』卡片替換為『符合 PAC 條件個案』，並顯示四類疾病分佈。
+
+> **[User]**: 總儀表板 long stay改成>14天超長住院標示
+> ---
+> **[System]**: 已將 Long Stay 標籤更新為『>14天超長住院標示』，並調整樣式以容納較長文字。
+> - Git Status: Clean.
+> - Deployment: All features pushed to main.
+
 
 
 
