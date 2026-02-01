@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { type Patient, ResourceCategory, type MatchedResource, DepartmentRole } from '../../types/template';
+import { type Patient, ResourceCategory, type MatchedResource } from '../../types/template';
 import { generateCarePlanAI, generateEducationText } from '../../services/geminiService';
 import { standardWorkflow } from '../../data/standardWorkflow';
-import { mockTasks } from '../../data/mockData';
+
 import { vitalMonitor } from '../../services/vitalSignMonitor';
 import { SmartCMSForm } from '../assessment/SmartCMSForm';
 import DischargePlacementForm from './DischargePlacementForm';
@@ -42,26 +42,7 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
     const [matchedResources, setMatchedResources] = useState<MatchedResource[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    // Task Board State
-    const [activeDept, setActiveDept] = useState<DepartmentRole | 'All'>('All');
-    const [isTasksExpanded, setIsTasksExpanded] = useState(true);
 
-    const deptColors: Record<string, string> = {
-        [DepartmentRole.Nurse]: 'bg-blue-500',
-        [DepartmentRole.SocialWorker]: 'bg-green-500',
-        [DepartmentRole.Nutritionist]: 'bg-amber-500',
-        [DepartmentRole.Physiotherapist]: 'bg-indigo-500',
-        [DepartmentRole.Pharmacist]: 'bg-purple-500',
-        [DepartmentRole.Doctor]: 'bg-rose-500',
-    };
-
-    const patientTasks = useMemo(() => {
-        if (!activePatient) return [];
-        return mockTasks.filter(t =>
-            t.patientId.includes(activePatient.id) &&
-            (activeDept === 'All' || t.dept === activeDept)
-        );
-    }, [activePatient, activeDept]);
 
     // Placement Logic
     const [placementData, setPlacementData] = useState<DischargePlacement | undefined>(patients[0]?.dischargePlacement);
@@ -331,75 +312,7 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                     )}
                 </div>
 
-                {/* Task Board Section */}
-                <div className="mb-8 border-b border-slate-100 pb-8">
-                    <button
-                        onClick={() => setIsTasksExpanded(!isTasksExpanded)}
-                        className="flex items-center justify-between w-full mb-4 group"
-                    >
-                        <h4 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-                            <i className="fas fa-tasks text-purple-500"></i>
-                            跨團隊待辦事項 (Pending Tasks)
-                        </h4>
-                        <span className="text-xs text-slate-400 group-hover:text-purple-600 transition">
-                            <i className={`fas fa-chevron-${isTasksExpanded ? 'up' : 'down'} mr-1`}></i>
-                            {isTasksExpanded ? '收折' : '展開'}
-                        </span>
-                    </button>
 
-                    {isTasksExpanded && (
-                        <div className="bg-purple-50/50 p-6 rounded-2xl border border-purple-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                <button
-                                    onClick={() => setActiveDept('All')}
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${activeDept === 'All' ? 'bg-slate-800 text-white shadow-md' : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-200'}`}
-                                >
-                                    全部
-                                </button>
-                                {Object.values(DepartmentRole).map(role => (
-                                    <button
-                                        key={role}
-                                        onClick={() => setActiveDept(role)}
-                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ${activeDept === role ? `${deptColors[role]} text-white shadow-md` : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-200'}`}
-                                    >
-                                        {role}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {patientTasks.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {patientTasks.map(task => (
-                                        <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition hover:border-purple-200">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className={`px-2 py-0.5 rounded text-[8px] font-black text-white uppercase tracking-wider ${deptColors[task.dept]}`}>
-                                                    {task.dept}
-                                                </span>
-                                                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${task.priority === 'High' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-400'}`}>
-                                                    {task.priority === 'High' ? '緊急' : '一般'}
-                                                </span>
-                                            </div>
-                                            <h3 className="font-bold text-slate-800 mb-1 text-sm leading-tight">{task.title}</h3>
-                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
-                                                <div className="flex items-center gap-1 text-[9px] text-slate-400">
-                                                    <i className="fas fa-clock"></i> {task.deadline}
-                                                </div>
-                                                <span className={`text-[9px] font-black uppercase ${task.status === 'Done' ? 'text-green-500' : task.status === 'Ongoing' ? 'text-amber-500' : 'text-slate-300'}`}>
-                                                    {task.status === 'Done' ? '已完成' : task.status === 'Ongoing' ? '執行中' : '待處理'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-8 text-slate-400 text-xs bg-white rounded-xl border border-dashed border-slate-200">
-                                    <i className="fas fa-check-circle text-2xl mb-2 opacity-50"></i>
-                                    <p>目前無待辦事項</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
 
                 {/* Step 1: Pre-assessment (S0/S1) */}
                 {activeStepId === 'step_pre' && (

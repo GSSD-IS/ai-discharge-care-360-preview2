@@ -1201,7 +1201,39 @@ efactor: Move RBAC selection to Login Page。
 > 1.  **Remove**: 已從 `Dashboard.tsx` 移除「待辦事項」UI 及其相關 State/Handler。
 > 2.  **Verify**: 總覽儀表板現在僅保留「安置分佈」分析卡片，任務管理功能已完全移交給 `DischargePlanningHub`。
 >
+
+> **[DevOps_Engineer]**: 部署報告 (Dashboard Refactor)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `refactor: remove todo list from Dashboard since it moved to Planning Hub` (fd51247).
+> -   **UI Update**: 總覽儀表板已更新，移除了右側的待辦事項區塊。
+>
+
+> **[User]**: 部屬好了嗎
+> ---
+> **[Antigravity]**: 部署確認中。
+>
+> **[DevOps_Engineer]**:
+> - **Latest Commit**: `fd51247` (refactor: remove todo list from Dashboard since it moved to Planning Hub)
+> - **Git Status**: Clean, up to date with `origin/main`.
+
+> **[User]**: 出院計畫擬定的待辦事項不建了
+> ---
+> **[Planner]**: 收到。您決定 **移除** 出院計畫擬定 (DischargePlanningHub) 中的待辦事項功能。
+> 當前狀態：總覽儀表板 (Dashboard) 與 出院計畫中心 (Hub) 皆已不包含待辦事項。
+>
+> **[Action Plan]**:
+> 1.  **Remove**: 從 `DischargePlanningHub.tsx` 移除待辦事項 UI、State (`activeDept`, `patientTasks`) 與 Imports。
+> 2.  **Verify**: 確認頁面已恢復為純流程導向 (S0-S4)。
+> 3.  **Deploy**: 更新。
+>
+> **[Planner]**: 執行報告 (Task List Removal)
+> 1.  **Remove**: 程式碼已移除。
+> 2.  **Lint Fix**: 已清除未使用的 `mockTasks` 與 `DepartmentRole` 引用。
+>
 > 任務完成 (TERMINATE)。
+
+
+
 
 
 
