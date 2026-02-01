@@ -1327,7 +1327,23 @@ efactor: Move RBAC selection to Login Page。
 > 1.  **Revert Layout**: 將 `DischargePlanningHub.tsx` 回復為單欄式佈局 (Single Column)。
 > 2.  **Remove Sidebar**: 移除 `DischargeTodoSidebar` 引用與 Grid 容器。
 > 3.  **UI Restoration**: 確保原有「基本資料」與「各階段內容 (S0-S4)」恢復全寬顯示。
-> 4.  **Deploy**: 更新。
+
+> **[Planner]**: 執行報告 (Revert To-Do List)
+> -   **Layout Revert**: 已將 `DischargePlanningHub` 恢復為單欄式設計，移除右側邊欄。
+> -   **Component Cleanup**: 移除 `DischargeTodoSidebar` 的引用。
+> -   **Status**: 用戶確認不需要該功能，已執行代碼回滾。
+>
+
+> **[User]**: 我要從出院準備中心新增「待辦事項清單」功能放在右側邊欄 不是移除
+> ---
+> **[Planner]**: 收到。之前的理解有誤，您是希望 **保留並顯示** 右側邊欄的「待辦事項清單」。我將立即恢復該功能。
+>
+> **[Action Plan]**:
+> 1.  **Restore Layout**: 將 `DischargePlanningHub.tsx` 恢復為 Grid 雙欄佈局 (2-Column)。
+> 2.  **Re-enable Sidebar**: 重新引入 `<DischargeTodoSidebar />` 元件至右側欄位。
+> 3.  **Deploy**: 更新。
+
+
 
 
 
