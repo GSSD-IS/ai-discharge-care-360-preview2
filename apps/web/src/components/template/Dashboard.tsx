@@ -12,15 +12,6 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
     const [selectedWard, setSelectedWard] = useState<string>('All');
     const [editingResource, setEditingResource] = useState<Patient | null>(null);
 
-    // To-Do List State
-    const [todoItems, setTodoItems] = useState<any[]>([
-        { id: '1', title: '出院準備評估會議', date: '2023-11-30', time: '10:30', location: '7A討論室', target: '張曉明 (N, SW, NU)', priority: 'High', isCompleted: false },
-        { id: '2', title: '家屬需求協商', date: '2023-11-30', time: '14:00', location: '社工會談室', target: '王美利 (N, D)', priority: 'Normal', isCompleted: false },
-        { id: '3', title: '長照2.0 專員訪視', date: '2023-12-01', time: '09:00', location: '702-1病床', target: '林大同', priority: 'High', isCompleted: false },
-    ]);
-    const [editingTodo, setEditingTodo] = useState<any | null>(null);
-    const [isTodoModalOpen, setIsTodoModalOpen] = useState(false);
-
     const handleResourceEdit = (p: Patient) => {
         // Create a shallow copy to allow local editing without affecting list immediately if needed, 
         // but for this mock we edit the reference directly or copy it.
@@ -46,27 +37,7 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
         setEditingResource(null);
     };
 
-    // To-Do Handlers
-    const handleTodoToggle = (id: string) => {
-        setTodoItems(prev => prev.map(item => item.id === id ? { ...item, isCompleted: !item.isCompleted } : item));
-    };
 
-    const handleSaveTodo = (todo: any) => {
-        if (editingTodo) {
-            // Update existing
-            setTodoItems(prev => prev.map(item => item.id === todo.id ? todo : item));
-        } else {
-            // Create new
-            setTodoItems(prev => [...prev, { ...todo, id: Math.random().toString(36).substr(2, 9), isCompleted: false }]);
-        }
-        setIsTodoModalOpen(false);
-        setEditingTodo(null);
-    };
-
-    const openTodoModal = (todo: any | null = null) => {
-        setEditingTodo(todo || { date: new Date().toISOString().split('T')[0], time: '12:00', priority: 'Normal', title: '', location: '', target: '' });
-        setIsTodoModalOpen(true);
-    };
 
     // Mock current date for calculation consistency: 2023-11-30
     const referenceDate = new Date('2023-11-30');
@@ -331,45 +302,7 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
 
                 {/* Right: Side Panel (To-Do & Analytics) */}
                 <div className="col-span-12 xl:col-span-3 flex flex-col gap-6">
-                    {/* To-Do List Card */}
-                    <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow flex flex-col flex-1 min-h-[400px]">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-500 text-sm"><i className="fas fa-clipboard-list"></i></div>
-                                待辦事項
-                            </h3>
-                            <button onClick={() => openTodoModal()} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:bg-sky-500 hover:text-white flex items-center justify-center transition shadow-sm">
-                                <i className="fas fa-plus"></i>
-                            </button>
-                        </div>
 
-                        <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                            {todoItems.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).map(item => (
-                                <div key={item.id} className={`p-4 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.02] ${item.isCompleted ? 'bg-slate-50 border-transparent opacity-50' : 'bg-white border-slate-100 hover:border-sky-200 hover:shadow-lg hover:shadow-sky-100'}`}
-                                    onClick={() => openTodoModal(item)}>
-                                    <div className="flex items-start gap-3">
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleTodoToggle(item.id); }}
-                                            className={`w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all mt-0.5 ${item.isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-transparent border-slate-200 group-hover:border-sky-400'}`}
-                                        >
-                                            {item.isCompleted && <i className="fas fa-check text-[10px]"></i>}
-                                        </button>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${item.priority === 'High' ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'}`}>
-                                                    {item.time}
-                                                </span>
-                                            </div>
-                                            <h4 className={`font-bold text-sm mb-1 truncate ${item.isCompleted ? 'line-through text-slate-400' : 'text-slate-700'}`}>{item.title}</h4>
-                                            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold">
-                                                <span className="truncate max-w-[80px] bg-slate-50 px-1.5 py-0.5 rounded"><i className="fas fa-user mr-1"></i>{item.target}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Analytics Card */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
@@ -461,57 +394,7 @@ const Dashboard: React.FC<DashboardProps> = ({ patients, onSelectPatient, onOpen
                     </div>
                 )}
 
-                {/* To-Do Modal */}
-                {isTodoModalOpen && editingTodo && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsTodoModalOpen(false)}></div>
-                        <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 relative z-10 animate-in zoom-in duration-200">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold flex items-center gap-2">
-                                    <i className="fas fa-calendar-check text-sky-500"></i>
-                                    {editingTodo.id ? '編輯事項' : '新增事項'}
-                                </h3>
-                                <button onClick={() => setIsTodoModalOpen(false)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition">
-                                    <i className="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 mb-1">標題</label>
-                                    <input type="text" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.title} onChange={e => setEditingTodo({ ...editingTodo, title: e.target.value })} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1">日期</label>
-                                        <input type="date" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.date} onChange={e => setEditingTodo({ ...editingTodo, date: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1">時間</label>
-                                        <input type="time" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.time} onChange={e => setEditingTodo({ ...editingTodo, time: e.target.value })} />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1">地點</label>
-                                        <input type="text" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.location} onChange={e => setEditingTodo({ ...editingTodo, location: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-400 mb-1">對象</label>
-                                        <input type="text" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.target} onChange={e => setEditingTodo({ ...editingTodo, target: e.target.value })} />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-400 mb-1">優先級</label>
-                                    <select className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-sky-500" value={editingTodo.priority} onChange={e => setEditingTodo({ ...editingTodo, priority: e.target.value })}>
-                                        <option value="Normal">普通</option>
-                                        <option value="High">緊急/重要</option>
-                                    </select>
-                                </div>
-                                <button onClick={() => handleSaveTodo(editingTodo)} className="w-full py-3.5 bg-sky-600 text-white rounded-2xl font-bold shadow-lg shadow-sky-600/20 hover:bg-sky-700 transition mt-2">儲存事項</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+
             </div>
         </div>
     );

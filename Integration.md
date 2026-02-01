@@ -861,7 +861,16 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Action Plan]**:
 > 1.  **Refactor**: 從 `WardTeamHubProps` 與解構賦值中移除未使用的 Props，或暫時忽略。
 > 2.  **Verify**: 本地執行 `npm run build` 確認修復。
-> 3.  **Redeploy**: 推送修復补丁。
+
+> **[DevOps_Engineer]**: 修復報告 (Fix Report)
+> -   **Status**: Git Push Successful (f97e873).
+> -   **Changes**: 
+>     1. `WardTeamHub.tsx`: 移除 `patients` 與 `onSelectPatient` 宣告。
+>     2. `ClinicalApp.tsx`: 移除傳遞給 WardTeamHub 的多餘 Props。
+> -   **Expected Result**: Vercel 建置應可通過。
+>
+> 任務圓滿完成。
+
 
 
 
@@ -1177,7 +1186,24 @@ efactor: Move RBAC selection to Login Page。
 
 > **[User]**: 部屬
 > ---
+
 > **[System]**: 再次確認狀態，目前已是最新版本 (Clean Tree, Up-to-date with Main)。無需重複部署。
+>
+> **[User]**: 總覽儀表板的代辦事項搬移到出院計畫擬定 (續)
+> ---
+> **[Planner]**: 收到。經確認，`Dashboard.tsx` 仍保有舊版的「待辦事項」區塊。
+>
+> **[Action Plan]**:
+> 1.  **Remove**: 從 `Dashboard.tsx` 移除待辦事項 UI、State (`todoItems`) 與 Handler。
+> 2.  **Verify**: 確認 `DischargePlanningHub` 已具備任務管理功能 (已於上一階段完成)。
+
+> **[Planner]**: 執行報告 (Dashboard Update)
+> 1.  **Remove**: 已從 `Dashboard.tsx` 移除「待辦事項」UI 及其相關 State/Handler。
+> 2.  **Verify**: 總覽儀表板現在僅保留「安置分佈」分析卡片，任務管理功能已完全移交給 `DischargePlanningHub`。
+>
+> 任務完成 (TERMINATE)。
+
+
 
 
 
