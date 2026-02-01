@@ -1307,7 +1307,29 @@ efactor: Move RBAC selection to Login Page。
 > 3.  **Field Added**: 新增 `target` (對象) 欄位，現共有 6 個欄位 (事項、關係人、對象、日期、時間、地點)。
 > 4.  **Refinement**: 修復了巢狀結構問題，確保 UI 階層正確。
 >
-> 任務完成 (TERMINATE)。
+
+> **[DevOps_Engineer]**: 部署報告 (Refactor & 2-Col Layout)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `refactor: extract todo sidebar, implement 2-col layout, add target field` (7efa19d).
+> -   **Changes**:
+>     1.  **Refactor**: 拆分 `DischargeTodoSidebar` 元件。
+>     2.  **Layout**: 實作 Grid 雙欄位佈局 (左: 流程 / 右: 待辦事項)。
+>     3.  **Feature**: 待辦事項新增「對象」輸入欄位。
+>
+
+> 任務圓滿完成。
+
+> **[User]**: 出院計畫擬定中出院準備待辦事項不建了
+> ---
+> **[Planner]**: 收到。您決定 **不建立 (取消)** 「出院準備待辦事項」功能。
+>
+> **[Action Plan]**:
+> 1.  **Revert Layout**: 將 `DischargePlanningHub.tsx` 回復為單欄式佈局 (Single Column)。
+> 2.  **Remove Sidebar**: 移除 `DischargeTodoSidebar` 引用與 Grid 容器。
+> 3.  **UI Restoration**: 確保原有「基本資料」與「各階段內容 (S0-S4)」恢復全寬顯示。
+> 4.  **Deploy**: 更新。
+
+
 
 
 
