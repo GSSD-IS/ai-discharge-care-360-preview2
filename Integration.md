@@ -845,7 +845,25 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Action Plan]**:
 > 1.  檢查 `git status` 確認是否有未提交變更。
 > 2.  若無變更，執行 `git commit --allow-empty -m "trigger: manual redeploy"` 以強制觸發 Vercel。
-> 3.  執行 `git push origin main`。
+
+> **[DevOps_Engineer]**: 部署報告 (Redeploy Report)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `docs: update integration log for manual redeploy` (388b3fd).
+> -   **Vercel**: 已觸發新一輪部署。
+> 
+
+> **[User]**: vercel build log 有異常: TS6133: 'patients' is declared but its value is never read.
+> ---
+> **[DevOps_Engineer]**: 偵測到 CI 級別的 TypeScript 阻擋錯誤。Vercel 的 `tsc -b` 若開啟了 `noUnusedLocals` 會導致建置失敗。
+>
+> **[Root Cause]**: 在遷移待辦事項時，`WardTeamHub` 移除了使用 `patients` 與 `onSelectPatient` 的程式碼，但 Props 中仍保留宣告。
+>
+> **[Action Plan]**:
+> 1.  **Refactor**: 從 `WardTeamHubProps` 與解構賦值中移除未使用的 Props，或暫時忽略。
+> 2.  **Verify**: 本地執行 `npm run build` 確認修復。
+> 3.  **Redeploy**: 推送修復补丁。
+
+
 
 
 

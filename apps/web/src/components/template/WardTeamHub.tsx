@@ -4,15 +4,13 @@ import { DepartmentRole, type Patient } from '../../types/template';
 import CaseDetail from './CaseDetail';
 
 interface WardTeamHubProps {
-    patients: Patient[];
     selectedPatient?: Patient | null;
-    onSelectPatient?: (patient: Patient) => void;
     onBack?: () => void;
 }
 
 
 
-const WardTeamHub: React.FC<WardTeamHubProps> = ({ patients, selectedPatient, onSelectPatient, onBack }) => {
+const WardTeamHub: React.FC<WardTeamHubProps> = ({ selectedPatient, onBack }) => {
     if (selectedPatient && onBack) {
         return <CaseDetail patient={selectedPatient} onBack={onBack} />;
     }

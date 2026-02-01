@@ -99,9 +99,7 @@ const ClinicalApp: React.FC = () => {
         return <DischargePlanningHub patients={patients} />;
       case 'team':
         return <WardTeamHub
-          patients={patients}
           selectedPatient={currentPatient}
-          onSelectPatient={handleSelectPatient}
           onBack={() => setCurrentPatient(null)}
         />;
       case 'followup':
