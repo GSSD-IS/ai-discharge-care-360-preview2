@@ -1230,7 +1230,36 @@ efactor: Move RBAC selection to Login Page。
 > 1.  **Remove**: 程式碼已移除。
 > 2.  **Lint Fix**: 已清除未使用的 `mockTasks` 與 `DepartmentRole` 引用。
 >
+
+> **[DevOps_Engineer]**: 部署報告 (Removal)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `refactor: remove todo list from DischargePlanningHub as requested` (03d27b1).
+>
+
+> 任務圓滿完成。
+
+> **[User]**: 待辦事項為出備手動輸入
+> ---
+> **[Planner]**: 收到。您希望恢復待辦事項功能，但明確定義為 **「手動輸入 (Manual Entry)」** 的出院準備清單，而非系統自動帶入。
+>
+> **[Action Plan]**:
+> 1.  **Re-implement**: 在 `DischargePlanningHub.tsx` 重新加入「出院準備待辦事項」區塊。
+> 2.  **Feature**:
+>     -   新增功能 (Add): 允許手動輸入事項內容。
+>     -   勾選功能 (Check): 標記完成。
+>     -   刪除功能 (Delete): 移除不需要的項目。
+> 3.  **State**: 使用 React State 暫存手動輸入的資料。
+
+> **[Planner]**: 執行報告 (Manual To-Do)
+> 1.  **Re-implement**: 已在 `DischargePlanningHub` 重建待辦事項區塊。
+> 2.  **Fields**: 支援輸入 `事項內容`, `日期`, `時間`, `地點`。
+> 3.  **Features**: 包含新增、完成勾選、刪除功能。
+> 4.  **UI**: 採用 Sky Blue 色系，區別於之前的紫色 (Team Tasks)，強調這是出院準備的清單。
+>
 > 任務完成 (TERMINATE)。
+
+
+
 
 
 

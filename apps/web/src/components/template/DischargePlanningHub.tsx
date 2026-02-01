@@ -42,6 +42,35 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
     const [matchedResources, setMatchedResources] = useState<MatchedResource[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
 
+    // Manual To-Do List State
+    const [manualTodos, setManualTodos] = useState<{ id: string, text: string, date: string, time: string, location: string, isCompleted: boolean }[]>([
+        { id: '1', text: '聯繫家屬確認出院接送方式', date: '2023-12-01', time: '10:00', location: '護理站', isCompleted: false },
+        { id: '2', text: '確認輔具是否已送達家中', date: '2023-12-01', time: '14:00', location: '案家', isCompleted: false }
+    ]);
+    const [newItem, setNewItem] = useState({ text: '', date: '', time: '', location: '' });
+    const [isTasksExpanded, setIsTasksExpanded] = useState(true);
+
+    const handleAddTodo = () => {
+        if (!newItem.text.trim()) return;
+        setManualTodos(prev => [...prev, {
+            id: Date.now().toString(),
+            text: newItem.text,
+            date: newItem.date,
+            time: newItem.time,
+            location: newItem.location,
+            isCompleted: false
+        }]);
+        setNewItem({ text: '', date: '', time: '', location: '' });
+    };
+
+    const handleToggleTodo = (id: string) => {
+        setManualTodos(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
+    };
+
+    const handleDeleteTodo = (id: string) => {
+        setManualTodos(prev => prev.filter(t => t.id !== id));
+    };
+
 
 
     // Placement Logic
@@ -308,6 +337,96 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                 initialData={placementData}
                                 onSave={handleSavePlacement}
                             />
+                        </div>
+                    )}
+                </div>
+
+                {/* Manual To-Do List Section */}
+                <div className="mb-8 border-b border-slate-100 pb-8">
+                    <button
+                        onClick={() => setIsTasksExpanded(!isTasksExpanded)}
+                        className="flex items-center justify-between w-full mb-4 group"
+                    >
+                        <h4 className="text-lg font-bold flex items-center gap-2 text-slate-800">
+                            <i className="fas fa-clipboard-check text-sky-500"></i>
+                            出院準備待辦事項 (Manual To-Do)
+                        </h4>
+                        <span className="text-xs text-slate-400 group-hover:text-sky-600 transition">
+                            <i className={`fas fa-chevron-${isTasksExpanded ? 'up' : 'down'} mr-1`}></i>
+                            {isTasksExpanded ? '收折' : '展開'}
+                        </span>
+                    </button>
+
+                    {isTasksExpanded && (
+                        <div className="bg-sky-50/50 p-6 rounded-2xl border border-sky-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4">
+                                <input
+                                    type="text"
+                                    value={newItem.text}
+                                    onChange={(e) => setNewItem({ ...newItem, text: e.target.value })}
+                                    placeholder="輸入待辦事項..."
+                                    className="md:col-span-4 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                />
+                                <input
+                                    type="date"
+                                    value={newItem.date}
+                                    onChange={(e) => setNewItem({ ...newItem, date: e.target.value })}
+                                    className="md:col-span-2 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                />
+                                <input
+                                    type="time"
+                                    value={newItem.time}
+                                    onChange={(e) => setNewItem({ ...newItem, time: e.target.value })}
+                                    className="md:col-span-2 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                />
+                                <input
+                                    type="text"
+                                    value={newItem.location}
+                                    onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
+                                    placeholder="地點"
+                                    className="md:col-span-2 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                />
+                                <button
+                                    onClick={handleAddTodo}
+                                    className="md:col-span-2 bg-sky-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-sky-700 transition flex items-center justify-center gap-2"
+                                >
+                                    <i className="fas fa-plus"></i> 新增
+                                </button>
+                            </div>
+
+                            <div className="space-y-2">
+                                {manualTodos.length > 0 ? (
+                                    manualTodos.map(todo => (
+                                        <div key={todo.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${todo.isCompleted ? 'bg-slate-50 border-transparent' : 'bg-white border-slate-100 hover:border-sky-200'}`}>
+                                            <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => handleToggleTodo(todo.id)}>
+                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${todo.isCompleted ? 'bg-sky-500 border-sky-500 text-white' : 'border-slate-300 bg-white'}`}>
+                                                    {todo.isCompleted && <i className="fas fa-check text-[10px]"></i>}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <span className={`text-sm font-bold block ${todo.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                                        {todo.text}
+                                                    </span>
+                                                    <div className="text-[10px] text-slate-400 flex gap-3 mt-1">
+                                                        {todo.date && <span><i className="fas fa-calendar-alt mr-1"></i>{todo.date}</span>}
+                                                        {todo.time && <span><i className="fas fa-clock mr-1"></i>{todo.time}</span>}
+                                                        {todo.location && <span><i className="fas fa-map-marker-alt mr-1"></i>{todo.location}</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteTodo(todo.id)}
+                                                className="text-slate-300 hover:text-red-500 px-2 transition-colors"
+                                            >
+                                                <i className="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-6 text-slate-400 text-xs border border-dashed border-slate-200 rounded-xl">
+                                        尚無待辦事項
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
