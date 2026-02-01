@@ -1,4 +1,4 @@
-import { type Patient, CaseStatus, DischargeType, DepartmentRole } from "../types/template";
+import { type Patient, CaseStatus, DischargeType, DepartmentRole, type CoordinationTask } from "../types/template";
 import { type Tenant, type User, UserRole } from "../types/saas";
 
 // --- Mock Patients (Clinical Data) ---
@@ -124,6 +124,15 @@ export const initialPatients: Patient[] = [
             { role: DepartmentRole.Physiotherapist, status: "評估中", lastNote: "建議居家復健", updatedAt: "2023-11-27" }
         ]
     }
+];
+
+
+export const mockTasks: CoordinationTask[] = [
+    { id: 't1', patientId: 'ID: 8821', patientName: '張曉明', bed: '702-1', dept: DepartmentRole.Nutritionist, title: '術後高纖飲食評估', priority: 'Medium', deadline: '今天 17:00', status: 'Pending' },
+    { id: 't2', patientId: 'ID: 8821', patientName: '張曉明', bed: '702-1', dept: DepartmentRole.Physiotherapist, title: '床邊復健需求評估', priority: 'High', deadline: '今天 12:00', status: 'Ongoing' },
+    { id: 't3', patientId: 'ID: 8823', patientName: '王美利', bed: '601-A', dept: DepartmentRole.Pharmacist, title: '多重用藥雲端核對', priority: 'High', deadline: '明天 09:00', status: 'Pending' },
+    { id: 't4', patientId: 'ID: 8822', patientName: '林大同', bed: '705-2', dept: DepartmentRole.SocialWorker, title: '安置機構床位確認', priority: 'Medium', deadline: '明天 15:00', status: 'Done' },
+    { id: 't5', patientId: 'ID: 8821', patientName: '張曉明', bed: '702-1', dept: DepartmentRole.Pharmacist, title: '出院帶藥教育', priority: 'Low', deadline: '11/25', status: 'Pending' },
 ];
 
 // --- Mock SaaS Data (Tenants & Users) ---

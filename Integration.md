@@ -796,8 +796,45 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Design Analysis]**:
 > - **Layout**: 三欄式佈局 (左: 里程碑+風險 / 中: 團隊溝通 / 右: AI 衛教生成)。
 > - **Right Column**: 與目前的「AI 摘要 + 雷達圖」不同，新設計強調「卡片式衛教內容」與「回診提醒」。
-> - **Left Column**: 將「AI 風險預警」移至左側底部，強調嚴重性。
-> 
+
+> **[User]**: 總覽儀表板的代辦事項搬移到出院計畫擬定
+> ---
+> **[Antigravity]**: 收到。這是一項合理的 UI 重構需求，將「任務管理」與「出院計畫」整合能提升工作流效率。
+>
+> **[Planner]**:
+> 1.  **Refactor**: 識別 `WardTeamHub.tsx` 中的 `mockTasks` 與渲染邏輯。
+> 2.  **Move**: 將代辦事項清單 (To-Do List) 搬移至 `DischargePlanningHub.tsx`。
+> 3.  **Data Centralization**: 將 `mockTasks` 數據抽離至 `mockData.ts` 以便統一管理。
+> 4.  **UI Integration**: 在 `DischargePlanningHub` 中設計合適的區塊來放置待辦事項。
+>
+> **[Action Plan]**:
+> 1. 更新 `mockData.ts`: 匯出 `mockTasks`。
+> 2. 修改 `DischargePlanningHub.tsx`: 引入並渲染待辦事項清單。
+> 3. 修改 `WardTeamHub.tsx`: 移除待辦事項清單。
+>
+
+> **[Planner]**: 執行報告 (Execution Report)
+> 1.  **Refactor**: `mockTasks` 已成功遷移至 `apps/web/src/data/mockData.ts`。
+> 2.  **Move**: `WardTeamHub.tsx` 已移除待辦事項區塊，僅保留動態牆與通訊錄。
+> 3.  **Integrate**: `DischargePlanningHub.tsx` 已新增「跨團隊待辦事項」折疊面板，並支援根據當前選中病患 (Active Patient) 自動過濾任務。
+>
+> **[Critic]**: 驗證結果：
+> -   `WardTeamHub.tsx` 語法檢查：PASS.
+> -   `DischargePlanningHub.tsx` 邏輯檢查：PASS. 
+> -   功能完整性：待辦事項功能已成功轉移，無邏輯遺失。
+>
+
+> **[User]**: 部屬
+> ---
+> **[DevOps_Engineer]**: 收到部署指令。準備將最新的變更 (包含待辦事項遷移) 發布至生產環境。
+>
+> **[Action Plan]**:
+> 1.  **Build Check**: 執行 `npm run build` 確保代碼穩定。
+> 2.  **Git Commit**: 提交變更 `refactor: move tasks to DischargePlanningHub`.
+> 3.  **Deploy**: 推送至 `main` 分支觸發 Vercel 自動部署。
+
+
+ 
 > **[Refactor Plan]**:
 > 1. **移除 RiskRadar**: 依據設計圖移除雷達圖，改為強調右側的 AI 衛教卡片。
 > 2. **重構 Right Column**: 實作「藥物使用」、「居家照護」、「回診提醒」三張卡片樣式。
