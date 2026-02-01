@@ -1281,7 +1281,36 @@ efactor: Move RBAC selection to Login Page。
 > 2.  **Auto Fill**: 當選擇病患時，會自動帶入 `床號 + 姓名` 至關係人欄位，減少輸入負擔。
 > 3.  **UI Updated**: 調整 Grid Layout 容納 5 個輸入欄位，優化列表顯示。
 >
+
+> **[DevOps_Engineer]**: 部署報告 (Field Expansion)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `feat: add related person field to manual todo list with auto-fill` (e49a110).
+> -   **Feature**: 新增「關係人」欄位，且會自動帶入病患資訊。
+>
+
+> 任務圓滿完成。
+
+> **[User]**: 出院準備待辦事項放在右邊側欄位
+> ---
+> **[Planner]**: 收到。您希望將「出院準備待辦事項」從上方區塊移至 **右側欄位 (Right Sidebar)**，形成左右並列的佈局，方便在操作流程 (S0-S4) 時隨時查看與編輯待辦事項。
+>
+> **[Action Plan]**:
+> 1.  **Layout Refactor**: 修改 `DischargePlanningHub.tsx` 的佈局結構。
+>     -   原結構: 單欄 (Header -> Stepper -> ToDo -> Context -> Steps)
+>     -   新結構: Grid 佈局 (Left: Context + Steps | Right: ToDo List)
+> 2.  **Move Component**: 將 `Manual To-Do List Section` 程式碼搬移至右側欄位容器中。
+> 3.  **Responsiveness**: 確保在手機版自動切換為垂直堆疊 (Stack)。
+
+> **[Planner]**: 執行報告 (Layout Refactor & Field Expansion)
+> 1.  **Component Extraction**: 將待辦事項區塊獨立為 `DischargeTodoSidebar` 元件，提升程式碼可維護性。
+> 2.  **Layout Update**: `DischargePlanningHub` 改用 Grid 佈局 (左 2/3: 流程 / 右 1/3: 待辦事項)。
+> 3.  **Field Added**: 新增 `target` (對象) 欄位，現共有 6 個欄位 (事項、關係人、對象、日期、時間、地點)。
+> 4.  **Refinement**: 修復了巢狀結構問題，確保 UI 階層正確。
+>
 > 任務完成 (TERMINATE)。
+
+
+
 
 
 
