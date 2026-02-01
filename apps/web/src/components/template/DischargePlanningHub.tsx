@@ -43,12 +43,19 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
     const [searchQuery, setSearchQuery] = useState<string>('');
 
     // Manual To-Do List State
-    const [manualTodos, setManualTodos] = useState<{ id: string, text: string, date: string, time: string, location: string, isCompleted: boolean }[]>([
-        { id: '1', text: '聯繫家屬確認出院接送方式', date: '2023-12-01', time: '10:00', location: '護理站', isCompleted: false },
-        { id: '2', text: '確認輔具是否已送達家中', date: '2023-12-01', time: '14:00', location: '案家', isCompleted: false }
+    const [manualTodos, setManualTodos] = useState<{ id: string, text: string, date: string, time: string, location: string, relatedPerson: string, isCompleted: boolean }[]>([
+        { id: '1', text: '跨團隊討論會議', date: '2023-12-01', time: '10:00', location: '護理站', relatedPerson: '01A-01 王大明', isCompleted: false },
+        { id: '2', text: '確認輔具是否已送達家中', date: '2023-12-01', time: '14:00', location: '案家', relatedPerson: '01A-01 王大明', isCompleted: false }
     ]);
-    const [newItem, setNewItem] = useState({ text: '', date: '', time: '', location: '' });
+    const [newItem, setNewItem] = useState({ text: '', date: '', time: '', location: '', relatedPerson: '' });
     const [isTasksExpanded, setIsTasksExpanded] = useState(true);
+
+    // Auto-fill relatedPerson when activePatient changes or initially
+    useEffect(() => {
+        if (activePatient) {
+            setNewItem(prev => ({ ...prev, relatedPerson: `${activePatient.bed} ${activePatient.name}` }));
+        }
+    }, [activePatient]);
 
     const handleAddTodo = () => {
         if (!newItem.text.trim()) return;
@@ -58,9 +65,14 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
             date: newItem.date,
             time: newItem.time,
             location: newItem.location,
+            relatedPerson: newItem.relatedPerson,
             isCompleted: false
         }]);
-        setNewItem({ text: '', date: '', time: '', location: '' });
+        // Reset but keep relatedPerson populated
+        setNewItem({
+            text: '', date: '', time: '', location: '',
+            relatedPerson: activePatient ? `${activePatient.bed} ${activePatient.name}` : ''
+        });
     };
 
     const handleToggleTodo = (id: string) => {
@@ -364,8 +376,15 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                     type="text"
                                     value={newItem.text}
                                     onChange={(e) => setNewItem({ ...newItem, text: e.target.value })}
-                                    placeholder="輸入待辦事項..."
+                                    placeholder="待辦事項內容 (如: 跨團隊會議)"
                                     className="md:col-span-4 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                />
+                                <input
+                                    type="text"
+                                    value={newItem.relatedPerson}
+                                    onChange={(e) => setNewItem({ ...newItem, relatedPerson: e.target.value })}
+                                    placeholder="關係人 (床號 姓名)"
+                                    className="md:col-span-2 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
                                 />
                                 <input
                                     type="date"
@@ -377,7 +396,7 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                     type="time"
                                     value={newItem.time}
                                     onChange={(e) => setNewItem({ ...newItem, time: e.target.value })}
-                                    className="md:col-span-2 px-4 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                                    className="md:col-span-1 px-2 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-sky-200"
                                 />
                                 <input
                                     type="text"
@@ -388,9 +407,9 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                 />
                                 <button
                                     onClick={handleAddTodo}
-                                    className="md:col-span-2 bg-sky-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-sky-700 transition flex items-center justify-center gap-2"
+                                    className="md:col-span-1 bg-sky-600 text-white px-2 py-2 rounded-xl font-bold hover:bg-sky-700 transition flex items-center justify-center gap-1"
                                 >
-                                    <i className="fas fa-plus"></i> 新增
+                                    <i className="fas fa-plus"></i>
                                 </button>
                             </div>
 
@@ -406,7 +425,8 @@ const DischargePlanningHub: React.FC<DischargePlanningHubProps> = ({ patients })
                                                     <span className={`text-sm font-bold block ${todo.isCompleted ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
                                                         {todo.text}
                                                     </span>
-                                                    <div className="text-[10px] text-slate-400 flex gap-3 mt-1">
+                                                    <div className="text-[10px] text-slate-400 flex flex-wrap gap-3 mt-1">
+                                                        {todo.relatedPerson && <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500"><i className="fas fa-user-tag mr-1"></i>{todo.relatedPerson}</span>}
                                                         {todo.date && <span><i className="fas fa-calendar-alt mr-1"></i>{todo.date}</span>}
                                                         {todo.time && <span><i className="fas fa-clock mr-1"></i>{todo.time}</span>}
                                                         {todo.location && <span><i className="fas fa-map-marker-alt mr-1"></i>{todo.location}</span>}

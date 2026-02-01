@@ -1256,7 +1256,35 @@ efactor: Move RBAC selection to Login Page。
 > 3.  **Features**: 包含新增、完成勾選、刪除功能。
 > 4.  **UI**: 採用 Sky Blue 色系，區別於之前的紫色 (Team Tasks)，強調這是出院準備的清單。
 >
+
+> **[DevOps_Engineer]**: 部署報告 (Manual To-Do)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `feat: re-implement manual todo list with detailed fields in DischargePlanningHub` (4597fed).
+> -   **UI Update**: 出院計畫中心已包含新的手動待辦事項清單 (含日期/時間/地點欄位)。
+>
+
+> 任務圓滿完成。
+
+> **[User]**: 待辦事項欄位有 日期時間地點 關係人(床號姓名) 待辦事項 (如跨團隊會議)
+> ---
+> **[Planner]**: 收到。您希望擴充待辦事項的欄位細節，使其更符合臨床協調場景。
+>
+> **[Action Plan]**:
+> 1.  **Modify State**: 在 `DischargePlanningHub.tsx` 的 `manualTodos` 新增 `relatedPerson` 欄位。
+> 2.  **Auto-fill**: 新增任務時，`關係人` 欄位預設帶入當前病患的 `[床號] [姓名]`，但允許修改。
+> 3.  **UI Update**:
+>     -   Input Area: 新增「關係人」輸入框。
+>     -   List Item: 調整排版以顯示所有 5 個欄位 (待辦事項、日期、時間、地點、關係人)。
+
+> **[Planner]**: 執行報告 (Field Expansion)
+> 1.  **Field Added**: 成功新增 `relatedPerson` 欄位。
+> 2.  **Auto Fill**: 當選擇病患時，會自動帶入 `床號 + 姓名` 至關係人欄位，減少輸入負擔。
+> 3.  **UI Updated**: 調整 Grid Layout 容納 5 個輸入欄位，優化列表顯示。
+>
 > 任務完成 (TERMINATE)。
+
+
+
 
 
 
