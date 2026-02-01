@@ -831,7 +831,23 @@ Vercel 正在建置 `api` (NestJS)，但我們的目標是展示 `web` (React Fr
 > **[Action Plan]**:
 > 1.  **Build Check**: 執行 `npm run build` 確保代碼穩定。
 > 2.  **Git Commit**: 提交變更 `refactor: move tasks to DischargePlanningHub`.
-> 3.  **Deploy**: 推送至 `main` 分支觸發 Vercel 自動部署。
+
+> **[DevOps_Engineer]**: 部署報告 (Deployment Report)
+> -   **Status**: Git Push Successful.
+> -   **Commit**: `refactor: move tasks from WardTeamHub to DischargePlanningHub` (46d885d).
+> -   **Vercel**: 自動部署流程已觸發。預計 1-2 分鐘內生效。
+> 
+
+> **[User]**: 重新部署至github.
+> ---
+> **[DevOps_Engineer]**: 收到指令。可能是上次自動部署未觸發或需手動重啟。
+>
+> **[Action Plan]**:
+> 1.  檢查 `git status` 確認是否有未提交變更。
+> 2.  若無變更，執行 `git commit --allow-empty -m "trigger: manual redeploy"` 以強制觸發 Vercel。
+> 3.  執行 `git push origin main`。
+
+
 
 
  
