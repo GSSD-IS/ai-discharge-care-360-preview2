@@ -1,12 +1,15 @@
 import {
-    ApiResponse,
     CaseState,
     ActionType,
+    PacStatus,
+    TerminationType
+} from './types';
+import type {
+    ApiResponse,
     FlagPayload,
     OrdersPayload,
     PacStartPayload,
     PacFinishPayload,
-    PacStatus,
     ReferralPayload,
     SuspendPayload,
     ResumePayload,
@@ -16,9 +19,9 @@ import {
     CaseSummaryData,
     TodoItem,
     WorkflowHistoryItem,
-    TerminationType
+    BarthelIndex,
+    DischargePlacement
 } from './types';
-import { DischargePlacement, BarthelIndex } from '../../types/template';
 
 // --- Error Classes ---
 class ApiError extends Error {

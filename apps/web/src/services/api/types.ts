@@ -1,8 +1,4 @@
-import {
-    DischargePlacement,
-    BarthelIndex,
-    Patient
-} from '../../types/template';
+import type { DischargePlacement, Patient } from '../../types/template';
 
 // --- Global Response Wrapper ---
 export interface ApiResponse<T = null> {
@@ -13,45 +9,65 @@ export interface ApiResponse<T = null> {
     traceId?: string;
 }
 
-// --- Enums ---
-export enum CaseState {
-    S0 = 'S0', // Monitor
-    S1 = 'S1', // Review (Flagged)
-    S2 = 'S2', // Assessment
-    S3 = 'S3', // Locked (Referral Sent)
-    S4 = 'S4', // Closed
-    S5 = 'S5', // PAC Consult
-    E1 = 'E1', // Suspended
-    T1 = 'T1', // Terminated
+// --- BarthelIndex (defined locally since not exported from template.ts) ---
+export interface BarthelIndex {
+    feeding: number;
+    bathing: number;
+    grooming: number;
+    dressing: number;
+    bowels: number;
+    bladder: number;
+    toiletUse: number;
+    transfers: number;
+    mobility: number;
+    stairs: number;
+    total: number;
 }
 
-export enum ActionType {
-    FLAG = 'FLAG',
-    ORDERS = 'ORDERS',
-    PAC_START = 'PAC_START',
-    PAC_FINISH = 'PAC_FINISH',
-    REFERRAL = 'REFERRAL',
-    CLOSE = 'CLOSE',
-    SUSPEND = 'SUSPEND',
-    RESUME = 'RESUME',
-    TERMINATE = 'TERMINATE'
-}
+// --- Enums (as const for erasableSyntaxOnly compatibility) ---
+export const CaseState = {
+    S0: 'S0', // Monitor
+    S1: 'S1', // Review (Flagged)
+    S2: 'S2', // Assessment
+    S3: 'S3', // Locked (Referral Sent)
+    S4: 'S4', // Closed
+    S5: 'S5', // PAC Consult
+    E1: 'E1', // Suspended
+    T1: 'T1', // Terminated
+} as const;
+export type CaseState = typeof CaseState[keyof typeof CaseState];
 
-export enum FlagSource {
-    AI = 'AI',
-    MANUAL = 'MANUAL'
-}
+export const ActionType = {
+    FLAG: 'FLAG',
+    ORDERS: 'ORDERS',
+    PAC_START: 'PAC_START',
+    PAC_FINISH: 'PAC_FINISH',
+    REFERRAL: 'REFERRAL',
+    CLOSE: 'CLOSE',
+    SUSPEND: 'SUSPEND',
+    RESUME: 'RESUME',
+    TERMINATE: 'TERMINATE'
+} as const;
+export type ActionType = typeof ActionType[keyof typeof ActionType];
 
-export enum PacStatus {
-    ACCEPTED = 'Accepted',
-    REJECTED = 'Rejected'
-}
+export const FlagSource = {
+    AI: 'AI',
+    MANUAL: 'MANUAL'
+} as const;
+export type FlagSource = typeof FlagSource[keyof typeof FlagSource];
 
-export enum TerminationType {
-    DECEASED = 'DECEASED',
-    AAD = 'AAD',
-    TRANSFER = 'TRANSFER'
-}
+export const PacStatus = {
+    ACCEPTED: 'Accepted',
+    REJECTED: 'Rejected'
+} as const;
+export type PacStatus = typeof PacStatus[keyof typeof PacStatus];
+
+export const TerminationType = {
+    DECEASED: 'DECEASED',
+    AAD: 'AAD',
+    TRANSFER: 'TRANSFER'
+} as const;
+export type TerminationType = typeof TerminationType[keyof typeof TerminationType];
 
 // --- Data Models ---
 export interface TodoItem {
@@ -66,8 +82,6 @@ export interface TodoItem {
 }
 
 export interface WorkflowSnapshot {
-    // Snapshot can be any payload, using a union type or specific interface per action is better
-    // For simplicity in Mock, we allow partial flexible structure but strongly typed common fields
     riskScore?: number;
     reason?: string;
     hisOrderId?: string;
@@ -134,12 +148,12 @@ export interface PacStartPayload {
 export interface PacFinishPayload {
     status: PacStatus;
     recommendation: string;
-    pacHospital: string | null; // Required if Accepted, Null if Rejected
+    pacHospital: string | null;
 }
 
 // POST /actions/referral
 export interface ReferralPayload {
-    matchedResources?: string[]; // IDs
+    matchedResources?: string[];
     aiPlan?: {
         careProblems: string[];
         resourceSuggestions: string[];
@@ -168,7 +182,7 @@ export interface TerminatePayload {
     transferDetails: {
         targetHospital: string;
         targetDepartment: string;
-    } | null; // Required if TRANSFER, Null otherwise
+    } | null;
 }
 
 // POST /actions/close
@@ -177,3 +191,6 @@ export interface ClosePayload {
     finalDestination: string;
     checkoutNote?: string;
 }
+
+// Re-export for convenience
+export type { DischargePlacement, Patient };

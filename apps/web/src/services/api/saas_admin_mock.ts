@@ -1,25 +1,29 @@
 // SaaS Admin Mock Service
 // Self-contained type definitions (no import conflicts)
 
-// --- Types & Enums ---
+// --- Types & Enums (as const for erasableSyntaxOnly compatibility) ---
 
-export enum TenantStatus {
-    ACTIVE = 'ACTIVE',
-    SUSPENDED = 'SUSPENDED',
-    ARCHIVED = 'ARCHIVED'
-}
+export const TenantStatus = {
+    ACTIVE: 'ACTIVE',
+    SUSPENDED: 'SUSPENDED',
+    ARCHIVED: 'ARCHIVED'
+} as const;
+export type TenantStatus = typeof TenantStatus[keyof typeof TenantStatus];
 
-export enum SubscriptionPlan {
-    STANDARD = 'STANDARD',
-    PREMIUM = 'PREMIUM'
-}
+export const SubscriptionPlan = {
+    STANDARD: 'STANDARD',
+    PREMIUM: 'PREMIUM'
+} as const;
+export type SubscriptionPlan = typeof SubscriptionPlan[keyof typeof SubscriptionPlan];
 
-export enum AdminRole {
-    SUPER_ADMIN = 'ROLE_SUPER_ADMIN',
-    TENANT_ADMIN = 'ROLE_TENANT_ADMIN',
-    USER = 'ROLE_USER',
-    ANONYMOUS = 'ANONYMOUS'
-}
+export const AdminRole = {
+    SUPER_ADMIN: 'ROLE_SUPER_ADMIN',
+    TENANT_ADMIN: 'ROLE_TENANT_ADMIN',
+    USER: 'ROLE_USER',
+    ANONYMOUS: 'ANONYMOUS'
+} as const;
+export type AdminRole = typeof AdminRole[keyof typeof AdminRole];
+
 
 export interface FeatureFlags {
     ENABLE_AI_ANALYSIS: boolean;
