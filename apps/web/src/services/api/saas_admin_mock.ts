@@ -68,8 +68,13 @@ export interface TenantsResponse {
 
 // --- Errors ---
 class ApiError extends Error {
-    constructor(public code: string, message: string, public statusCode: number = 400) {
+    code: string;
+    statusCode: number;
+
+    constructor(code: string, message: string, statusCode: number = 400) {
         super(message);
+        this.code = code;
+        this.statusCode = statusCode;
     }
 }
 
