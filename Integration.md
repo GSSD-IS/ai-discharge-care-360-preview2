@@ -1222,7 +1222,317 @@ efactor: Move RBAC selection to Login Page。
 > 當前狀態：總覽儀表板 (Dashboard) 與 出院計畫中心 (Hub) 皆已不包含待辦事項。
 >
 > **[Action Plan]**:
-> 1.  **Remove**: 從 `DischargePlanningHub.tsx` 移除待辦事項 UI、State (`activeDept`, `patientTasks`) 與 Imports。
+> 1.  **Remove**:> 3.  整合至 `DischargePlanningHub`，用 Mock 資料取代現有的 Mock State。
+
+> **[User]**: Requirement Review Result: FAIL. (Major blocking issues: State Machine completeness, Resume logic, API Spec Missing, Todo Logic, Validation Rules).
+> ---
+> **[Planner]**: 收到 **FAIL** 審查結果。這是一次非常嚴謹的架構級審查，點出了規格書對於「複雜邏輯 (State Machine)」與「邊界條件」定義的不足。
+>
+> 針對您的 **Clarification Questions (Round 3)**，以下是 v4 版本的 **Final Decision**：
+>
+> 1.  **完整狀態與轉移 (State Machine)**:
+>     *   **Decision**: v4 將包含完整的狀態矩陣 (State Transition Table)，明確定義 `S0/S1/S2/S3/S4/S5/E1/T1` 間的所有 `ALLOW` 路徑、觸發 `Action` 以及對應的 `Error Code`。
+>
+> 2.  **Resume (E1 -> S0/Previous)**:
+>     *   **Logic**: `Previous` 指的是「暫停前的那一個狀態」。系統必須保存 `suspendSnapshot` (含 `previousState`)。
+>     *   **Decision**: Resume 時，系統根據 Snapshot 自動還原至上一狀態，API 不需傳入 Target State。
+>
+> 3.  **v2 API 回歸**:
+>     *   **Decision**: **Yes**。所有 `v2` 提及的 Actions (`/flag`, `/referral`, `/terminate`) 將全數回歸並補齊完整 Schema 與 Validation Rules。
+>
+> 4.  **Summary Schema**:
+>     *   **Decision**: 必須包含 `placement` 與 `assessment` 的 **完整 Inline Schema** (或精確參照)，絕不使用省略號。`workflowHistory.actor` 將包含 `{ id, name }`。
+>
+> 5.  **Todos Logic**:
+>     *   **Empty Array**: 視為 **Clear All (Delete All for Patient)**。
+>     *   **Duplicate ID**: 視為 **400 Bad Request**。
+>     *   **ID Format**: 必須為 UUID。
+>
+> 6.  **PAC Logic**:
+>     *   **PacHospital**: Accepted 時 **Required**，Rejected 時 **Forbidden (Must be null)**。
+>     *   **Automation**: 若 Accepted，系統 **強制 (Yes)** 自動更新 Placement Type。若失敗回傳 **500** (Transaction Rollback)。
+>
+> 接下來我將產出 **backend_spec_v4.md**，這將是一份包含完整狀態矩陣與嚴格 Schema 的最終規格。
+
+> **[User]**: Requirement Review Result: PASS. (Detailed Acceptance Criteria provided).
+> ---
+> **[Planner]**: 感謝確認 (**PASS**)。我們已完成後端規格的定案。
+>
+> 針對您最後的 **Clarification Questions (Final Check)**，我在此確認最終實作定義：
+>
+> 1.  **Summary Nulls**: 統一使用 **JSON `null`** (非 undefined/omitted)。
+> 2.  **Todo IDs**: **Yes**，允許前端不帶 ID，由後端自動生成 UUID。
+> 3.  **Resume S3**: **Yes**，回到 S3 後維持 Locked 狀態 (PUT = 409)。
+> 4.  **Terminate Fields**: **Yes**，非 Transfer 類型時 `transferDetails` 必須為 `null`。
+> 5.  **Unified 404**: **Yes**，所有資源找不到或權限不符皆回傳 `ERR_NOT_FOUND`。
+> 6.  **Snapshot**: **Yes**，為 Request Payload 的 **Full Copy** (含 null 欄位)。
+>
+> **Spec Phase Completed**.
+> 接續任務：**Implement Frontend Mock API Client** (基於 v4 規格)。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Polling, Error UI, Payload Sources, Locking Scope).
+> ---
+> **[Planner]**: 收到 **FAIL**。非常感謝您對於 UI 行為 (UX/Error Handling) 的細節拷問。要在前端接上真實 API (即使是 Mock)，這些互動細節必須定義清楚。
+>
+> 針對您的 **Clarification Questions (Frontend Integration)**，以下是 **Final Decision**：
+>
+> 1.  **Polling Strategy**:
+>     *   **Decision**: **Yes, Polling**. Interval = **5000ms**.
+>     *   **Stop Condition**: 當 `currentState` 為 `S4 (Closed)` 或 `T1 (Terminated)` 時停止輪詢。
+>
+> 2.  **Payload Sources (Simulated Actions)**:
+>     *   **Flag (S0->S1)**: Fixed Demo Data (`{ source: 'AI', riskScore: 88, reason: 'Demo Risk' }`).
+>     *   **Orders (S1->S2)**: Fixed Demo Data (`{ hisOrderId: 'ORD-DEMO', physicianId: 'DOC-MOCK' }`).
+>     *   **PAC (S2->S5)**: Fixed Demo Data (`{ consultDept: 'Neuro', urgency: 'High' }`).
+>     *   *Rationale*: 本階段目標為驗證 API 架構整合，暫不實作複雜表單 Modal。
+>
+> 3.  **Sync Strategy (Success)**:
+>     *   **Decision**: **Re-fetch Summary**. 每次 Action 成功後，立即呼叫 `getSummary` 確保前端資料與後端狀態機一致 (Single Source of Truth)。
+>
+> 4.  **Error Handling (Failure)**:
+>     *   **Decision**: 顯示 **Banner**。所有 400/409/500 錯誤皆顯示於頁面頂端 Alert，5秒後自動消失或手動關閉。
+>     *   **GetSummary Fail**: 顯示 **Full Page Error** (含 Retry 按鈕)。
+>
+> 5.  **Locking UI (S3/S5/E1)**:
+>     *   **Scope**: **Disable All Inputs** (Placement Form, Assessment Form, Todo Add/Check).
+>     *   **S5/E1**: 顯示 "Read Only" Banner。
+>
+> 接下来我將更新 **frontend_integration_plan.md**，包含完整的 Polling 邏輯、Payload 定義與新增的驗收案例。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Missing Suspend/Resume UI, Polling vs Edit Conflict, S4 Stop Logic).
+> ---
+> **[Planner]**: 收到 **FAIL**。確實，例外流程 (Suspend/Resume) 與編輯衝突 (Edit Conflict) 是真實環境中最常見的 UX 炸彈。感謝您的把關。
+>
+> 針對您的 **Clarification Questions (Round 2)**，以下是 **Final Decision (v3)**：
+>
+> 1.  **Suspend/Terminate UI (Missing Buttons)**:
+>     *   **Decision**: 在 Header 區域新增 **"More Actions" 下拉選單**，包含 `Suspend Case` 與 `Terminate Case`。
+>     *   **Resume UI**: 當處於 `E1 (Suspended)` 狀態時，Banner 上顯示 **"Resume Action" 按鈕**。
+>
+> 2.  **Polling vs. Editing Conflict**:
+>     *   **Decision**: **User Wins**. 若使用者正在編輯某欄位 (Focus) 或表單 Dirty 未存，Polling 回來的該欄位資料 **暫不覆蓋 (Ignore)**，待使用者 Save/Blur 後再由下一次 Polling 同步。
+>
+> 3.  **S4 Logic**:
+>     *   **Decision**: **Render then Stop**. Polling 抓到 S4 後，更新 UI 顯示結案狀態，隨即清除 Interval，確保使用者看到最終結果。
+>
+> 4.  **PAC Auto-fill Feedback**:
+>     *   **Decision**: **Toast Notification**. 當偵測到 `Placement` 因 PAC Accepted 被系統更新時，顯示 "Placement updated by PAC acceptance" Toast。
+>
+> 接下来我將更新 **frontend_integration_plan.md (v3.0)**，補齊例外流程 UI 與 Polling 抗衝突策略。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Conflict Definition, Payload Gaps, Error Strategies).
+> ---
+> **[Planner]**: 收到 **FAIL**。非常抱歉在 Payload 與 v4 Spec 的對齊上不夠精確，且抗衝突規則仍有模糊空間。
+>
+> 針對您的 **Clarification Questions (Round 3)**，以下是 **Final Decision (v4)**：
+>
+> 1.  **Conflict Resolution (Critical)**:
+>     *   **Definition**: "Editing" = **Focus** (游標在內) **OR** **Dirty** (已修尚未存)。
+>     *   **Granularity**: **Section Level** (Placement Form, Assessment Form, Todo List).
+>     *   **Locking Override**: **State Wins**. 若更新後的 `currentState` 進入鎖定狀態 (S3/S5/E1)，**立即強制鎖定 UI** (Drop dirty changes if necessary for safety). 安全優先。
+>
+> 2.  **Payload Fixes (Spec v4 Alignment)**:
+>     *   **Start PAC**: 補上 `reason: 'Rehab Need'`。
+>     *   **Close**: 補上 `checkoutNote: 'Standard Checkout'`。
+>     *   **Terminate**: `occurredAt` 使用 **ISO8601** (`new Date().toISOString()`)。
+>
+> 3.  **Exception Actions Scope**:
+>     *   **S3/S5 Locked**: 雖然表單鎖定，但 Header 的 **Suspend / Terminate** 仍 **允許操作** (依據 Spec v4 狀態機矩陣)。
+>
+> 4.  **Error UI Strategy**:
+>     *   **Action Error (400/409/500)**: 顯示 **Banner**。
+>     *   **Polling Error**: **Silent Retry**. 為了不打擾使用者，背景失敗僅 console.log，除非連續失敗 5 次才顯示 "Connection Unstable" Toast。
+>     *   **Resume Error (Non-E1)**: 顯示 Banner，保持 UI 不變。
+>
+> 接下來我將更新 **frontend_integration_plan.md (v4.0)**，這將是一份完全符合 Spec v4 且邏輯嚴密的最終計畫。
+
+> **[User]**: Requirement Review Result: PASS. (Clarification Questions: Referral Empty, Terminate Options, Polling Reset, Conflict rules).
+> ---
+> **[Planner]**: 感謝確認 (**PASS**)。我們已完成前端整合計畫的定案。
+>
+> 針對您最後的 **Clarification Questions (Final Check)**，我在此確認最終實作定義：
+>
+> 1.  **Referral Empty IDs**: **Yes** (允許送出空陣列)。
+> 2.  **Terminate Options**: **Yes** (僅提供 AAD，無 UI 選項)。**Yes** (400 顯示 Banner)。
+> 3.  **Close Note**: **Yes** (固定字串，無 UI 輸入)。
+> 4.  **Polling Failure**: **Yes** (含 4xx/5xx)。**Yes** (成功即重置計數)。
+> 5.  **Banner Message**: **Yes** (使用 ApiResponse.message)。
+> 6.  **Locking Banner**: **Yes** (S3/S5/E1 顯示 Read-only banner)。
+> 7.  **Conflict & Action Refetch**:
+>     *   若 Action 導致進入 **Restricted State** (如 S3/S5/E1): **State Wins** (強制覆蓋並鎖定)。
+>     *   若 Action 保持 **Editable State** (如 S0->S1) 且某 Section Dirty: **User Wins** (該 Section 不覆蓋)。
+>
+> **Project Phase: Execution Ready**.
+> 接續任務：**Execute Frontend Integration** (修改 `DischargePlanningHub.tsx`)。
+
+> **[User]**: 現在進入SAAS後台配置開發. 提出你的方案.
+> ---
+> **[Planner]**: 收到。暫停前端對接工作，切換至 **SaaS Super Admin (後台配置子系統)** 的規劃。
+>
+> 針對多租戶 (Multi-Tenant) 架構，後台配置系統 (SaaS Console) 需要管理以下核心維度：
+> 1.  **Tenant Governance**: 租戶的生命週期 (Onboarding, Suspend, Offboarding)。
+> 2.  **Feature Flags**: 不同訂閱等級的模組開關 (e.g., AI Module, Advanced Reporting)。
+> 3.  **Global Config**: 系統級參數 (e.g., API Rate Limits, Maintenance Mode)。
+>
+> 我將提出一份 **SaaS Admin Implementation> 請您審閱此架構方案。若同意，我將開始搭建 `/admin` 頁面與相關 Mock Service。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Missing Negative Paths, Schema Gaps, RBAC Definitions, Audit Rules).
+> ---
+> **[Planner]**: 收到 **FAIL**。非常抱歉第一版規劃過於粗略，未能滿足 SaaS 系統對安全性與可驗證性的高標準。
+>
+> 針對您的 **Clarification Questions (SaaS Admin)**，以下是 **Final Decision (v2)**：
+>
+> 1.  **API & RBAC**:
+>     *   Namespace: `/admin` **只允許** `ROLE_SUPER_ADMIN`。
+>     *   Pagination: **Yes**. Default 20, Max 100.
+>     *   Filter: **Yes**. Fields: `status`, `plan`.
+>     *   Forbidden Data: Response 禁止包含 `patients`, `cases`, `assessments` (Strict Patient Data).
+> 2.  **Schema Definitions**:
+>     *   Tenant ID: **UUID**.
+>     *   Status: `ACTIVE`, `SUSPENDED`, `ARCHIVED` (Archive = Read-only, Restore possible).
+>     *   Plans: Consolidate to `STANDARD`, `PREMIUM`.
+>     *   Features Override: `PUT /features` 為 **Full Replace**。
+>     *   `MAX_USERS`: Fixed as **Number** (Quota).
+> 3.  **Lifecycle**:
+>     *   Suspend: Requires Body `{ reason: string }`. Blocks **All Users** of that tenant.
+>     *   Tenant Not Found: Return **404**.
+>     *   Unauthorized: Return **403**.
+> 4.  **Audit**:
+>     *   API: **Yes** `GET /admin/audit-logs`.
+>     *   Fields: `id`, `timestamp`, `actorId`, `targetTenantId`, `action` (e.g., UPDATE_PLAN), `changes` (JSON Diff), `ipAddress`.
+>
+> 接下來我將更新 **saas_admin_plan.md (v2.0)**，補齊 API Schema、RBAC 矩陣與 Negative Paths。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: API Path Consistency, Pagination Ambiguity, Audit Action Gaps).
+> ---
+> **[Planner]**: 收到 **FAIL**。感謝您對 API 一致性與驗收標準的嚴格把關。這對於 Mock API 的準確性至關重要。
+>
+> 針對您的 **Clarification Questions (Round 2)**，以下是 **Final Decision (v3)**：
+>
+> 1.  **API Paths**:
+>     *   **Base Path**: Yes, `/v1/admin/...`.
+>     *   **GET Tenants**: `/v1/admin/tenants`.
+>     *   **Suspend**: `PUT /v1/admin/tenants/{id}/suspend`.
+> 2.  **Pagination**:
+>     *   **Page**: "Page Number" (Default **1**).
+>     *   **Limit**: "Items per Page" (Default **20**).
+> 3.  **Enums**:
+>     *   **Status**: Fixed to `ACTIVE` | `SUSPENDED` | `ARCHIVED`.
+>     *   **Plan**: Fixed to `STANDARD` | `PREMIUM`.
+> 4.  **Plan Updates**:
+>     *   **API**: Yes, `PUT /v1/admin/tenants/{id}/plan`.
+>     *   **Audit**: Yes, add `UPDATE_PLAN` action.
+> 5.  **Audit Data**:
+>     *   **Changes JSON**: Yes, arbitrary JSON allowed.
+>     *   **Isolation**: Yes, **Strictly No** Patient/Case Data in *any* Admin API response.
+>
+> 接下來我將更新 **saas_admin_plan.md (v3.0)**，統一所有 API 路徑，補齊 `UPDATE_PLAN` 流程，並修正驗證案例。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Negative Paths, Data Isolation, Sorting, Response Types).
+> ---
+> **[Planner]**: 收到 **FAIL**。非常感謝您指出的可驗證性死角 (Verification Dead Ends)，特別是 Data Isolation 與 Pagination Sorting。
+>
+> 針對您的 **Clarification Questions (Round 3)**，以下是 **Final Decision (v4)**：
+>
+> 1.  **Plan Update Negative Paths**:
+>     *   ID Not Found: **Yes (404)**.
+>     *   Missing Payload: **Yes (400)**.
+>     *   Invalid Enum: **Yes (400)**.
+>     *   RBAC: **Yes (403)**.
+> 2.  **Data Isolation (Verifiable Rules)**:
+>     *   **Scope**: Audit Logs & Admin APIs MUST NOT contain Patient/Case Data.
+>     *   **Forbidden Fields (Blacklist)**: `mrn`, `diagnosis`, `medications`, `admissionDate`, `dischargeDate`, `caregiverName`.
+> 3.  **Pagination Sorting**:
+>     *   **Determinism**: **Yes**.
+>     *   **Rule**: `createdAt DESC` (Newest first).
+> 4.  **Success Responses**:
+>     *   PUT `/plan`: **Yes** (Return updated `TenantConfig`).
+>     *   PUT `/features`: **Yes** (Return updated `TenantConfig`).
+>
+> 接下來我將更新 **saas_admin_plan.md (v4.0)**，將上述規則寫入規格，確保驗收標準清晰明確。
+
+> **[User]**: Requirement Review Result: FAIL. (Issues: Incomplete Negative Paths, TenantConfig Schema, Full Blacklist Check).
+> ---
+> **[Planner]**: 收到 **FAIL**。非常抱歉在 Negative Paths 的覆蓋率上不夠全面，且 Schema 定義缺失。
+>
+> 針對您的 **Clarification Questions (Round 4)**，以下是 **Final Decision (v5)**：
+>
+> 1.  **Negative Paths (All Endpoints)**:
+>     *   **All Endpoints**: Non-Super Admin -> **403**.
+>     *   **GET Tenants**: Invalid Params -> **400**.
+>     *   **POST Tenants**: Missing Fields -> **400**.
+>     *   **PUT Suspend/Features**: ID Not Found -> **404**, Missing Body/Invalid Type -> **400**.
+>     *   **Audit Logs**: Invalid Date -> **400**.
+> 2.  **TenantConfig Schema**:
+>     *   **Definition**: `{ id: string, name: string, status: Enum, plan: Enum, createdAt: ISOString, features: FeatureFlags, apiUsage: UsageStats }`.
+> 3.  **Data Isolation**:
+>     *   **Full Blacklist Check**: **Yes**. Must define and check ALL keys (`mrn`, `diagnosis`, `medications`, `admissionDate`, `dischargeDate`, `caregiverName`, `cmsScore`, `barthelIndex`).
+> 4.  **Pagination Determinism**:
+>     *   **CreatedAt**: **Yes**, server-generated timestamp.
+>     *   **Ordering**: **Yes**, strictly increasing for test data generation.
+>
+> 接下來我將更新 **saas_admin_plan.md (v5.0)**，這是包含完整 Schema、全端點負向路徑與嚴格黑名單驗證的最終版本。
+
+> **[User]**: Requirement Review Result: PASS. (Blocking Issues: None).
+> ---
+> **[Planner]**: 感謝確認 (**PASS**)。我們已完成 **SaaS Admin Portal** 的規劃階段。
+>
+> 根據您提供的 **Final Acceptance Criteria (Gherkin)**，我已將所有驗證場景記錄如下，這將作為開發與測試的唯一標準：
+>
+> ```gherkin
+> Scenario: RBAC denies non-super-admin for all admin endpoints
+> Given User role is ROLE_TENANT_ADMIN, ROLE_USER, or Anonymous
+> When calling any GET/POST/PUT under /v1/admin/*
+> Then the API returns 403
+>
+> Scenario: GET tenants returns paginated TenantConfig list ordered by createdAt DESC
+> Given User role is ROLE_SUPER_ADMIN
+> When GET /v1/admin/tenants?page=1&limit=20
+> Then the API returns { data: TenantConfig[], meta: { total, page, limit } }
+> And data is ordered by createdAt descending (newest first)
+>
+> Scenario: Create tenant generates id and createdAt and defaults ACTIVE
+> Given User role is ROLE_SUPER_ADMIN
+> When POST /v1/admin/tenants with body { name, adminEmail, plan: 'STANDARD'|'PREMIUM', domain? }
+> Then the API returns a TenantConfig (id=UUID, createdAt=ISO8601, status=ACTIVE)
+>
+> Scenario: Update tenant plan returns updated TenantConfig and triggers audit
+> Given User role is ROLE_SUPER_ADMIN
+> When PUT /v1/admin/tenants/{id}/plan with body { plan: 'STANDARD'|'PREMIUM' }
+> Then the API returns updated TenantConfig
+> And an audit log entry exists with action = 'UPDATE_PLAN'
+>
+> Scenario: Full data isolation blacklist enforced on admin responses and audit logs
+> Given User role is ROLE_SUPER_ADMIN
+> When GET /v1/admin/audit-logs
+> Then the response JSON must NOT contain keys mrn, diagnosis, medications, admissionDate, dischargeDate, caregiverName, cmsScore, barthelIndex
+> ```
+>
+> **Project Phase: Execution**.
+> 接續任務：**Implement SaaS Admin Mock API & UI**.
+> **[Planner]**: 感謝確認 (**PASS**)。我們已完成 **SaaS Admin Portal** 的規劃階段。
+>
+> **Execution Phase Log**:
+> **Step 1: Mock API** - `saas_admin_mock.ts` 完成，符合 Gate 0 嚴格規範 (UUID, Strict Schema, Response Format, Data Isolation).
+>
+> **Step 2: UI Integration** - `TenantManagementPage.tsx` 已更新：
+> - 整合 `SaaSAdminService.getTenants()`, `.suspendTenant()`, `.updatePlan()`.
+> - 實作分頁 (Pagination) 與篩選器 (Status/Plan filters).
+> - 顯示 UUID, TenantConfig.status, Plan, Features.
+>
+> **Verification Blocked**: PowerShell 執行原則 (Execution Policy) 限制了 `npm run dev` 或 `npx vite`。用戶需在本地手動執行以驗證 UI。
+
+
+
+
+
+
+
+
+
+
+
+ (`activeDept`, `patientTasks`) 與 Imports。
 > 2.  **Verify**: 確認頁面已恢復為純流程導向 (S0-S4)。
 > 3.  **Deploy**: 更新。
 >
@@ -1342,6 +1652,452 @@ efactor: Move RBAC selection to Login Page。
 > 1.  **Restore Layout**: 將 `DischargePlanningHub.tsx` 恢復為 Grid 雙欄佈局 (2-Column)。
 > 2.  **Re-enable Sidebar**: 重新引入 `<DischargeTodoSidebar />` 元件至右側欄位。
 > 3.  **Deploy**: 更新。
+
+> **[Planner]**: 執行報告 (Restore To-Do List)
+> -   **Layout Restore**: 通過 Git 操作與代碼編輯，已恢復 `DischargePlanningHub` 的 Grid 雙欄佈局。
+> -   **Component Restore**: 重新啟用 `DischargeTodoSidebar`。
+> -   **Status**: 功能復原完成，右側邊欄已準備就緒。
+>
+> 任務完成 (TERMINATE)。
+
+> **[User]**: 沒有部屬
+> ---
+> **[Planner]**: 收到問題。立即檢查部署狀態。
+> -   **Git Status**: 檢查上一筆 Push 指令 (ID: `45abac9c`)，狀態為 `DONE`，Exit Code `0`。
+> -   **Remote**: 成功推送到 `https://github.com/dreakchangbiz/ai-discharge-care-360-preview.git` (Commit: `e0d2820`)。
+> -   **Vercel Check**: 本地未安裝 Vercel CLI，無法手動觸發。
+> -   **Conclusion**: 代碼已成功推送到 GitHub。請檢查 Vercel Dashboard 是否有延遲或構建錯誤。本地端確認推送成功。
+>
+> 任務完成 (TERMINATE)。
+
+> **[User]**: 不進行實作, 討論狀態機.
+> ---
+> **[Planner]**: 收到。我們將暫停程式碼開發，專注於 **狀態機 (State Machine) 邏輯** 的討論與定義。
+>
+> 目前系統中的狀態機 (`standardWorkflow.ts`) 定義如下：
+>
+> ### Current State Machine Definition
+>
+> | State ID | Label (階段名稱) | Type | Transitions (下一階段) | Note |
+> | :--- | :--- | :--- | :--- | :--- |
+> | **S0** | 住院監測 (Monitoring) | Normal | AI_FLAG -> **S1** | 初始狀態，AI 背景監測。 |
+> | **S1** | 篩選與預備 (Screening) | Normal | ORDER_T3 -> **S2** | 醫師開立醫囑後進入評估。 |
+> | **S2** | 評估與計畫 (Assessment) | Normal | PAC_ELIGIBLE -> **S5**<br>SUBMIT -> **S3** | 核心階段。若符合 PAC 則分流。 |
+> | **S5** | PAC 分流 (Acute Post) | PAC | PAC_COMPLETE -> **S2** | PAC 評估完成後回歸主流程。 |
+> | **S3** | 轉介鎖定 (Locked) | Locked | DISCHARGE -> **S4** | 資料拋轉長照平台，不可修改。 |
+> | **S4** | 服務啟動 (Active) | Terminal | (None) | 結案出院。 |
+> | **E1** | 異常中止 (Abort) | Abort | STABILIZED -> **S0** | **Global Guard**: 臨床惡化時隨時觸發。 |
+>
+> **請教您的想法：**
+> 1.  上述流程是否符合目前的業務需求？
+> 2.  是否有缺少的狀態 (例如：家屬猶豫期、等待床位)？
+
+> **[User]**: 狀態機的具體流程. 包含特殊分支.
+> ---
+> **[Planner]**: 沒問題。以下是為您整理的 **完整狀態機流程 (Detailed State Machine Flow)**，包含主流程與特殊分支 (PAC/例外處理)。
+>
+> ### 1. 視覺化流程圖 (Visual Workflow)
+>
+> ```mermaid
+> stateDiagram-v2
+>     direction LR
+>
+>     %% 狀態定義
+>     S0: S0 住院監測 (Monitoring)
+>     S1: S1 篩選與預備 (Screening)
+>     S2: S2 評估與計畫 (Assessment)
+>     S3: S3 轉介鎖定 (Locked)
+>     S4: S4 服務啟動 (Active)
+>     S5: S5 PAC 分流 (Acute Post)
+>     E1: E1 異常中止 (Abort)
+>
+>     %% 主流程 (Happy Path)
+>     [*] --> S0: 入院 (Admission)
+>     S0 --> S1: AI_FLAG (AI 預測高風險)
+>     S1 --> S2: ORDER_T3 (醫師開立出院醫囑)
+>     S2 --> S3: SUBMIT (完成評估並送出)
+>     S3 --> S4: DISCHARGE (正式出院/結案)
+>     S4 --> [*]
+>
+>     %% 特殊分支 (Special Branches)
+>     S2 --> S5: PAC_ELIGIBLE (符合急性後期照護)
+>     S5 --> S2: PAC_COMPLETE (PAC 評估完成,回歸主流程)
+>
+>     %% 例外處理 (Global Guards)
+>     note right of E1
+>       Global Guard: 可從 S0-S3 隨時觸發
+>     end note
+>     S0 --> E1: CLINICAL_DETERIORATION
+>     S1 --> E1: CLINICAL_DETERIORATION
+>     S2 --> E1: CLINICAL_DETERIORATION
+>     S3 --> E1: CLINICAL_DETERIORATION
+>     E1 --> S0: STABILIZED (病情穩定後重置)
+> ```
+>
+> ### 2. 狀態詳細定義 (State Details)
+>
+> #### **A. 主流程 (Main Flow)**
+> 1.  **S0 住院監測 (Monitoring)**
+>     *   **入口**: 病患入院即自動進入。
+>     *   **行為**: AI 持續分析病歷 (EMR)，監測是否出現「出院困難風險因子」。
+>     *   **出口**: 若 AI 判定高風險 (Score > Threshold)，觸發 `AI_FLAG` 進入 S1。
+>
+> 2.  **S1 篩選與預備 (Screening)**
+>     *   **目的**: 早期介入。個管師確認 AI 篩選結果，等待醫師醫囑。
+>     *   **行為**: 收集基本社會心理資料。
+>     *   **出口**: 醫師開立「出院準備服務醫囑 (Order T3)」後，觸發 `ORDER_T3` 進入 S2。
+>
+> 3.  **S2 評估與計畫 (Assessment) [核心階段]**
+>     *   **目的**: 跨團隊評估。
+>     *   **行為**: 護理師 (Barthel Index)、社工、營養師填寫評估表；AI 生成照護計畫。
+>     *   **出口**: 團隊達成共識，點擊「送出評估」，觸發 `SUBMIT` 進入 S3。
+>
+> 4.  **S3 轉介鎖定 (Locked)**
+>     *   **特性**: **資料唯讀 (Read-only)**。
+>     *   **行為**: 評估資料自動拋轉至長照中心系統 (API Sync)。等待長照端回覆資源媒合結果。
+>     *   **出口**: 確認長照資源到位，病患辦理出院，觸發 `DISCHARGE` 進入 S4。
+>
+> 5.  **S4 服務啟動 (Active)**
+>     *   **狀態**: 終止狀態 (Terminal)。
+>     *   **行為**: 歸檔結案，啟動出院後追蹤 (Follow-up)。
+>
+> #### **B. 特殊分支 (Special Branches)**
+> 1.  **S5 PAC 分流 (Post-acute Care)**
+>     *   **觸發條件**: 在 S2 評估過程中，若病患符合 PAC 收案標準 (如：腦中風、骨折黃金復建期)。
+>     *   **流程**: S2 -> (PAC_ELIGIBLE) -> **S5** -> 填寫 PAC 專屬評估 -> (PAC_COMPLETE) -> **S2**。
+>     *   **目的**: 處理更複雜的復健轉介需求，完成後回歸主流程繼續出院準備。
+>
+> 2.  **E1 異常中止 (Abort / Global Guard)**
+>     *   **觸發條件**: 全域事件 `CLINICAL_DETERIORATION` (臨床惡化)。
+>     *   **適用範圍**: S0, S1, S2, S3 任一階段。
+>     *   **行為**: 強制中斷出院準備流程，標記為「暫停」。
+>     *   **恢復**: 待病情穩定後，通過 `STABILIZED` 事件重置回 **S0**，重新開始監測。
+>
+
+> **[User]**: 全域異常, 可能發生病故, 自行出院, 轉院.
+> ---
+> **[Planner]**: 收到。您的需求非常明確。我們需要區分 **「可恢復的暫停 (Suspension)」** 與 **「不可恢復的異常結案 (Abnormal Termination)」**。
+>
+> 針對「全域異常 (Global Exceptions)」，我建議拆分為兩類狀態：
+>
+> ### Updated State Definition (Refined)
+>
+> 1.  **E1: 臨床暫停 (Suspension)**
+>     *   **情境**: 病情惡化 (Clinical Deterioration)。
+>     *   **行為**: 暫停出院準備。
+>     *   **去向**: 病情穩定後，回滾至 **S0 (監測)** 重新開始。
+>
+> 2.  **T1: 異常結案 (Abnormal Terminal)** `New`
+>     *   **情境**:
+>         *   **病故 (Deceased)**
+>         *   **自行出院 (AAD - Against Advice Discharge)**
+>         *   **轉院 (Transfer)**
+>     *   **行為**: 強制終止流程，並記錄異常結案原因。
+>     *   **去向**: **End (結案)**。
+>
+> ### Updated Mermaid Diagram
+>
+> ```mermaid
+> stateDiagram-v2
+>     direction LR
+>
+>     %% ... (S0-S5 主流程不變) ...
+>     state "S4: 服務啟動 (Normal Terminal)" as S4
+>     state "T1: 異常結案 (Abnormal Terminal)" as T1
+>     state "E1: 臨床暫停 (Suspended)" as E1
+>
+>     %% Global Transitions (全域觸發)
+>     state Global_Guards {
+>         [*] --> E1: 臨床惡化
+>         [*] --> T1: 病故 / AAD / 轉院
+>     }
+>
+>     E1 --> S0: 病情穩定 (Stabilized)
+>     T1 --> [*]
+> ```
+>
+> 請問將「異常結案」獨立為 **T1** 狀態，並包含這三種子原因，是否符合您的設想？
+
+> **[User]**: OK. 接下來依然不動前端界面, 開始討論與後台的API設計, 表列出來前端要呼叫後端哪些API
+> ---
+> **[Planner]**: 收到。我們將進入 **API 設計階段**。
+>
+> 根據剛剛確認的狀態機 (包含主流程、PAC分支、異常結案)，我整理了以下 **後端 API 列表**，請您檢視是否完整。
+>
+> ### Proposed API Endpoints (Backend)
+>
+> 這些 API 將對應到前端 `standardWorkflow.ts` defined 的事件與狀態。
+>
+> #### 1. 流程控制 (Workflow Control)
+> | State Event | Method | Endpoint | Description |
+> | :--- | :--- | :--- | :--- |
+> | **Init** | `GET` | `/api/discharge/cases/{patientId}/status` | 取得目前案主的出院準備狀態 (Current State & Context)。 |
+> | **AI_FLAG** | `POST` | `/api/discharge/cases/{patientId}/flag` | 標記高風險 (System or Manual)。觸發 S0 -> S1。 |
+> | **ORDER_T3** | `POST` | `/api/discharge/cases/{patientId}/orders` | 接收/建立醫師出院醫囑。觸發 S1 -> S2。 |
+> | **SUBMIT** | `POST` | `/api/discharge/cases/{patientId}/referral` | 送出轉介單 (鎖定)。觸發 S2 -> S3。 |
+> | **DISCHARGE**| `POST` | `/api/discharge/cases/{patientId}/close` | 正式結案 (服務啟動)。觸發 S3 -> S4。 |
+>
+> #### 2. PAC 分流 (Special Branch)
+> | State Event | Method | Endpoint | Description |
+> | :--- | :--- | :--- | :--- |
+> | **ELIGIBLE** | `POST` | `/api/discharge/cases/{patientId}/pac/consult` | 啟動 PAC 會診申請。觸發 S2 -> S5。 |
+> | **COMPLETE** | `POST` | `/api/discharge/cases/{patientId}/pac/finish` | PAC 評估完成，回傳各類分數。觸發 S5 -> S2。 |
+>
+> #### 3. 異常與暫停 (Exceptions)
+> | State Event | Method | Endpoint | Description |
+> | :--- | :--- | :--- | :--- |
+> | **SUSPEND** | `POST` | `/api/discharge/cases/{patientId}/suspend` | **E1 臨床暫停**。記錄原因 (病情惡化)。狀態變更為 E1。 |
+> | **RESUME** | `POST` | `/api/discharge/cases/{patientId}/resume` | **E1 -> S0**。病情穩定，恢復監測。 |
+> | **TERMINATE**| `POST` | `/api/discharge/cases/{patientId}/terminate` | **T1 異常結案**。Payload 需包含類型: `{ type: 'DECEASED' | 'AAD' | 'TRANSFER' }`。 |
+>
+> #### 4. 資料存取 (Data Persistence)
+> | Context | Method | Endpoint | Description |
+> | :--- | :--- | :--- | :--- |
+> | assessment | `PUT` | `/api/discharge/cases/{patientId}/assessment` | 暫存/更新評估內容 (Barthel, CMS, Resources)。不改變狀態。 |
+> | placement | `PUT` | `/api/discharge/cases/{patientId}/placement` | 更新安置意向與基本資料。 |
+>
+> **討論點：**
+> 1.  關於 `TERMINATE` (異常結案)，前端傳送的 Payload 結構 `{ type: 'DECEASED', reason: '...' }` 是否足夠？
+
+> **[User]**: 不符合, 必須參考目前頁面設計.
+> ---
+> **[Planner]**: 收到。我已重新查閱 `template.ts` (前端型別定義) 與元件程式碼 (`DischargePlacementForm`, `DischargeTodoSidebar`)，確保 API Payloads **完全對應** 前端實際使用的資料結構。
+>
+> ### Revised API Payloads (Exact Match to UI)
+>
+> 這些 Payload 直接對應前端的 TypeScript Interfaces。
+>
+> #### 1. POST `/api/discharge/cases/{id}/referral` (送出轉介/鎖定)
+> *   **對應狀態**: S2 -> S3
+> *   **Request Body**: 聚合了安置方向、評估結果與 AI 計畫。
+>     ```json
+>     {
+>         "placement": { // 對應 DischargePlacement 介面
+>             "type": "Home", // Enum: Home, RCW, HomeHospice, Facility, Transfer
+>             "homeCare": { // 當 type == 'Home'
+>                 "caregiver": "Family", // Enum: Family, PrivateNurse...
+>                 "medicalDevices": ["OxygenGen", "Suction"], // Enum Array
+>                 "generalDevices": ["Wheelchair"],
+>                 "transport": "AccessibleCar",
+>                 "tubeCare": "HomeNursing"
+>             },
+>             "facility": { // 當 type == 'Facility'
+>                 "type": "NursingHome",
+>                 "name": "幸福養護之家",
+>                 "status": "Waiting"
+>             },
+>             // ... 其他對應 transfer, rcwUnitName 等欄位
+>         },
+>         "cmsScore": 85, // Barthel Index 總分
+>         "aiPlan": { // 對應 UI 上的 AI 計畫編輯區
+>             "careProblems": ["潛在跌倒風險", "照顧者技巧不足"],
+>             "resourceSuggestions": ["申請長照2.0喘息服務"]
+>         }
+>     }
+>     ```
+>
+> #### 2. PUT `/api/discharge/cases/{id}/todos` (待辦事項同步)
+> *   **新增 API**: 專門用於儲存右側邊欄的待辦事項。
+> *   **Request Body**: `ToDoItem[]` 陣列。
+>     ```json
+>     [
+>         {
+>             "id": "1701234567",
+>             "text": "聯繫輔具廠商",
+>             "date": "2023-12-05",
+>             "time": "14:00",
+>             "location": "護理站",
+>             "relatedPerson": "01A-01 王大明", // 自動帶入的關係人
+>             "target": "家屬",
+>             "isCompleted": false
+>         }
+>     ]
+>     ```
+>
+> #### 3. POST `/api/discharge/cases/{id}/terminate` (異常結案 T1)
+> *   **Request Body**:
+>     ```json
+>     {
+>         "type": "DECEASED", // Enum: DECEASED, AAD, TRANSFER
+>         "reason": "心肺衰竭",
+>         "occurredAt": "2023-12-25T14:30:00Z",
+>         "transferDetails": { // 當 type == 'TRANSFER' (AAD 轉院或一般轉院)
+>             "targetHospital": "台大醫院",
+>             "targetDepartment": "急診"
+>         }
+>     }
+>     ```
+>
+> #### 4. POST `/api/discharge/cases/{id}/pac/consult` (PAC 分流 S5)
+> *   **Request Body**:
+>     ```json
+>     {
+>         "pacType": "CVA", // 腦中風
+>         "consultantDr": "Dr. Wang",
+>         "assessment": {
+>             "mrsScore": 3,
+>             "nihssScore": 12
+>         }
+>     }
+>     ```
+>
+
+> **[User]**: 所有畫面一共有幾個卡片? 檢查每張卡片中要使用的項目. 以及API是否滿足.
+> ---
+> **[Planner]**: 收到。我詳細檢查了 `DischargePlanningHub.tsx` 的所有 UI 區塊 (Cards)，並逐一核對 API 覆蓋率 (Gap Analysis)。
+>
+> ### UI Cards vs. API Coverage Report
+>
+> | UI Card (區塊) | 內容項目 (Data Fields) | API Support | Status |
+> | :--- | :--- | :--- | :--- |
+> | **1. Header & Vitals** | State, Temp, SpO2, Patient List | `GET /status` (State)<br>*(Vitals 由 IoT Service 直連，不需 API)* | ✅ Pass |
+> | **2. 基本資料與安置方向** | 姓名, 床號, **預計出院日**, 安置表單 (`DischargePlacement`) | `GET /status` (Read)<br>`PUT /placement` (Write) | ⚠️ **Gap**: `PUT /placement` 需包含 `expectedDischargeDate`。 |
+> | **3. AI 照護計畫 (Step 1)** | Care Problems, Resource Suggestions | `POST /referral` (含 `aiPlan`) | ✅ Pass |
+> | **4. 評估表單 (Step 2)** | Barthel Index (SmartCMSForm) | `PUT /assessment` (Draft)<br>`POST /referral` (Final) | ✅ Pass |
+> | **5. 衛教指導 (Step 2)** | 藥物/居護/回診建議 (`EducationContent`) | `n/a` | ❌ **Missing**: 缺少儲存衛教內容的 API。 |
+> | **6. 媒合資源 (Step 3)** | 已加入的資源清單 (`MatchedResource[]`) | `POST /referral` | ⚠️ **Gap**: `POST /referral` Payload 需補上 `resources` 陣列。 |
+> | **7. 待辦事項 (Sidebar)** | To-Do Items (`manualTodos`) | `PUT /todos` | ✅ Pass |
+>
+> ### Recommended API Adjustments
+>
+> 為了滿足上述缺失，建議微調 API 定義：
+>
+> 1.  **Refine** `PUT /placement`: Payload 新增 `expectedDischargeDate`。
+> 2.  **Refine** `POST /referral`: Payload 新增 `matchedResources: string[]` (Resource IDs) 與 `educationPlan`。
+> 3.  **New** `PUT /education`: 選項，若需獨立儲存衛教草稿。建議併入 `PUT /assessment` 或新增專用 endpoint。
+>
+
+> **[User]**: 本平台是多租戶型, 後端實作將外包, 要重新設計接口.
+> ---
+> **[Planner]**: 收到。針對 **多租戶 (Multi-Tenancy)** 與 **外包協作 (Outsourcing)** 的需求，API 設計必須更加標準化、嚴謹且具備環境隔離能力。
+>
+> 以下是 **正式 API 規範書 (API Specification v1.0)** 的架構建議：
+>
+> ### 1. Global Standards (全域規範)
+>
+> *   **Protocol**: HTTPS / JSON
+> *   **Base URL**: `https://api.med-platform.com/v1/{tenantId}` (Path-based Routing 較 Explicit，適合外包避免 Header 遺漏)
+>     *   或者使用 Header: `X-Tenant-ID: <org_uuid>` (視 Gateway 設定而定，此處預設使用 Path 以確保租戶隔離)。
+> *   **Authentication**: `Authorization: Bearer <jwt_token>`
+> *   **Response Wrapper**: 所有回應統一包裝，確保 Error Handling 一致。
+>     ```json
+>     {
+>       "success": true,
+>       "code": "20000",
+>       "message": "OK",
+>       "data": { ... }
+>     }
+>     ```
+>
+> ### 2. API Endpoints (Revised for Multi-Tenancy)
+>
+> 這些接口已包含前述 Gap Analysis 的補強 (如 `education`, `matchedResources` 等)。
+>
+> #### A. Case Management (個案管理)
+> | Method | URL | Description |
+> | :--- | :--- | :--- |
+> | `GET` | `/cases/{id}/context` | 取得 Header 資訊 (姓名, Vitals Meta, Status)。 |
+> | `GET` | `/cases/{id}/summary` | 取得完整 Summary (含 Placement, Assessment Status)。 |
+>
+> #### B. Discharge Planning (出院準備核心)
+> | Method | URL | Description | Payloads (Key Fields) |
+> | :--- | :--- | :--- | :--- |
+> | `PUT` | `/cases/{id}/placement` | 更新安置意向 | `{ type, homeCare: {...}, facility: {...}, expectedDischargeDate: "YYYY-MM-DD" }` **(Fixed Gap)** |
+> | `PUT` | `/cases/{id}/assessment`| 暫存評估表 | `{ barthelIndex: {...}, cmsData: [...] }` |
+> | `PUT` | `/cases/{id}/education` | **(New)** 儲存衛教 | `{ content: { "Medication": "...", "HomeCare": "..." } }` |
+>
+> #### C. Workflow Actions (狀態流轉)
+> | Method | URL | Description | Payloads (Key Fields) |
+> | :--- | :--- | :--- | :--- |
+> | `POST` | `/cases/{id}/actions/flag` | S0 -> S1 (AI Flag) | `{ riskScore, reason }` |
+> | `POST` | `/cases/{id}/actions/referral`| S2 -> S3 (送出轉介) | `{ placement, assessment, aiPlan, matchedResources: ["res_123", "res_456"] }` **(Fixed Gap)** |
+> | `POST` | `/cases/{id}/actions/terminate`| E1/T1 (異常結案) | `{ type: "DECEASED"|"AAD", reason, transferDetails: {...} }` |
+> | `POST` | `/cases/{id}/actions/pac` | S2 -> S5 (PAC 分流)| `{ pacType, assessment, consultantDr }` |
+>
+> #### D. Productivity (輔助功能)
+> | Method | URL | Description | Payloads |
+> | :--- | :--- | :--- | :--- |
+> | `GET` | `/cases/{id}/todos` | 讀取待辦事項 | `[{ id, text, isCompleted... }]` |
+> | `PUT` | `/cases/{id}/todos` | 同步待辦事項 | `[{ id, text... }]` (Full List Sync) |
+>
+> **外包溝通重點：**
+> 1.  **Strict Typing**: 要求後端嚴格校驗 Payload 中的 Enum (如 `PlacementType`, `RiskLevel`)。
+> 2.  **Stateless**: 確保 API 不依賴 Server Session，完全依賴 Token 與 TenantID。
+> 3.  **Audit Log**: 針對 `actions/*` 系列接口，後端必須強制寫入操作歷程 (Audit Trail)。
+>
+> 請問這份 **多租戶標準化 API 規範** 是否可以直接作為外包規格書的基礎？
+
+> **[User]**: LGTM (Approved `backend_spec_v1.md`)
+> ---
+> **[Planner]**: 感謝確認。
+>
+> **已完成項目**:
+> 1.  ✅ **狀態機定義**: 確認 S0-S4 主流程與 PAC/Exception 分支。
+> 2.  ✅ **API 規格設計**: 完成多租戶標準化 API 定義 (`backend_spec_v1.md`)。
+> 3.  ✅ **Gap Analysis**: 確認 UI 卡片資料與後端 API 的對應關係。
+>
+> **下一步建議**:
+> 雖然已產出後端規格，但為了讓前端開發持續進行 (不被外包進度 blocked)，我們是否要 **在前端建立 Mock API Client**？
+> 這樣可以讓前端隨時切換 `useMock: true/false`，模擬真實的後端互動 (包含 Loading, Error, State Transitions)。
+> 請問是否同意進入 Mock API 開發階段？
+
+> **[User]**: Requirement Review Result: FAIL. (Missing Workflow Actions, Summary Schema, and Boundary Rules).
+> ---
+> **[Planner]**: 收到 **FAIL** 審查結果。感謝您指出了規格書中對於「動態流程 (Workflow Actions)」與「讀取結構 (Read Model)」的定義缺失。
+>
+> 針對您的 **Clarification Questions (Round 2)**，以下是 v3 版本的檢討與決策：
+>
+> 1.  **PAC (S5) 流程細節**:
+>     *   **Decision**: `POST /actions/pac` 必須包含 `consultDept` (會診科別) 與 `urgency`。`pac-finish` 需回傳 `recommendation` (建議) 與 `status` (是否收案)。
+>
+> 2.  **醫囑 (Orders) 觸發**:
+>     *   **Decision**: 不僅是 Trigger，Payload 需承載 `hisOrderId` (HIS單號) 與 `orderContent` (醫囑內容) 以供稽核。
+>
+> 3.  **結案 (Close) 邏輯**:
+>     *   **Decision**: 雖然 S3 已鎖定，但 `POST /actions/close` 仍強制要求確認 `dischargeDate` (實際出院日) 與 `finalDestination` (最終去向)，確保與實際情況一致。
+>
+> 4.  **待辦事項 ID 機制**:
+>     *   **Decision**: 若 Payload 中項目無 `id`，後端自動生成 UUID 並存入；若有 `id` 則更新。回傳值需包含完整的 List (含新生成的 ID)。
+>
+> 5.  **跨租戶 ID 衝突**:
+>     *   **Decision**: 優先權原則。`SELECT * FROM patients WHERE id = ? AND tenant_id = ?`。若 UUID 存在但 tenant_id 不符，視為 **Not Found (404)**。
+>
+> 接下來我將產出 **backend_spec_v3.md**，補齊：
+> 1.  所有 Workflow Actions (Orders, PAC, Close, Suspend...) 的完整 Schema。
+> 2.  `GET /summary` 的回應結構。
+> 3.  PAC 狀態下的阻擋邏輯 (S5 禁止 Referral)。
+
+> **[User]**: Requirement Review Result: FAIL. (Detailed feedback on Schema, Error Codes, and Boundary Conditions).
+> ---
+> **[Planner]**: 收到 **FAIL** 審查結果。這是非常高品質的 Code Review，精準指出了外包實作最容易發生爭議的模糊地帶。
+>
+> 針對您的 **Clarification Questions**，我先在此進行明確定義 (這些定義將寫入 v2 規格書)：
+>
+> 1.  **多租戶隔離細節 (Tenant Isolation)**:
+>     *   **Decision**: `patientId` 為全域唯一 UUID (避免身分證號重複問題)。
+>     *   **Logic**: API Gateway 或 Middleware 必須強制驗證 `WHERE id = {patientId} AND tenant_id = {currentTenant}`。若找不到或 Tenant 不符，一律回傳 `404 Not Found` (安全性考量，不回傳 403 以避免洩露該 ID 存在於其他租戶)。
+>
+> 2.  **狀態流轉參數 (T1 Terminate)**:
+>     *   **Decision**: `reason` (String) 與 `type` (Enum) 為 **Required**。
+>
+> 3.  **個案摘要定義 (Summary History)**:
+>     *   **Decision**: 必須包含完整 Audit Trail。每筆紀錄需含 `{ timestamp, actorId, actionType, snapshot }`。
+>
+> 4.  **轉介單鎖定邏輯 (S3 Locked)**:
+>     *   **Decision**: **Strict Lock**。進入 S3 後，`PUT /placement`, `PUT /education`, `PUT /assessment` 皆必須拒絕 (409 Conflict)。唯有透過 `POST /unlock` (Admin Override) 或 `S3 -> S4` 才能解除。
+>
+> 5.  **待辦事項同步 (Todos)**:
+>     *   **Decision**: **Full Replacement (覆蓋式更新)**。前端負責維護完整清單，後端直接 Delete All + Insert All (或等效邏輯)。這是為了簡化外包實作與避免衝突。
+>
+> 6.  **AI Flag 來源**:
+>     *   **Decision**: 允許 **System (AI)** 與 **Manual (User)** 觸發。
+>     *   **Payload**: 必須包含 `{ source: 'AI'|'MANUAL', riskScore: number (0-100) }`。
+>
+
+
+
+
+
 
 
 
