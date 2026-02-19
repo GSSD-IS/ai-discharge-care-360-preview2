@@ -1,0 +1,40 @@
+name: Vibe Coding Auto Approve
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronized, labeled]
+
+jobs:
+  approve-and-sync:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'codex') || github.event.pull_request.user.login == 'dreakchangbiz'
+    
+    steps:
+      # 1. 強制同步遠端最新的 main，並以遠端為準解決衝突
+      - name: Checkout PR Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 獲取完整歷史紀錄以利合併
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-Resolve Conflict (Favor Remote)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          # 嘗試將 main 合併進 PR 分支，發生衝突時強制接受 main 的內容 (theirs)
+          # 這能修正 Codex 帶來的舊版 Workflow 檔案衝突
+          git merge origin/main -X theirs -m "Vibe sync: Auto-resolved conflicts with main" || echo "No conflicts to resolve"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      # 2. 自動核准
+      - name: Auto Approve
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. 開啟自動合併
+      - name: Enable Auto Merge
+        run: gh pr merge ${{ github.event.pull_request.number }} --auto --merge --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
