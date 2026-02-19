@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import {
   AddCaseParticipantDto,
   CreateCaseDto,
   CreateTaskDto,
   CreateTaskReplyDto,
+  LineWebhookDto,
+  SendProgressNotificationDto,
+  SendTaskNotificationDto,
   UpdateCaseStateDto,
 } from './dto/mvp.dto';
 import { MvpService } from './mvp.service';
@@ -54,5 +58,25 @@ export class MvpController {
     @Body() dto: CreateTaskReplyDto,
   ) {
     return this.mvpService.createTaskReply(taskId, dto);
+  }
+
+  @Post('line/notify/progress')
+  async sendProgressNotification(@Body() dto: SendProgressNotificationDto) {
+    return this.mvpService.sendProgressNotification(dto);
+  }
+
+  @Post('line/notify/task')
+  async sendTaskNotification(@Body() dto: SendTaskNotificationDto) {
+    return this.mvpService.sendTaskNotification(dto);
+  }
+
+  @Post('line/webhook')
+  async lineWebhook(
+    @Req() req: Request,
+    @Headers('x-line-signature') signature: string | undefined,
+    @Body() dto: LineWebhookDto,
+  ) {
+    const rawBody = JSON.stringify(req.body || {});
+    return this.mvpService.handleLineWebhook(rawBody, signature, dto);
   }
 }

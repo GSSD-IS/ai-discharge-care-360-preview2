@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { createHmac } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AddCaseParticipantDto,
   CreateCaseDto,
   CreateTaskDto,
   CreateTaskReplyDto,
+  LineWebhookDto,
+  SendProgressNotificationDto,
+  SendTaskNotificationDto,
   UpdateCaseStateDto,
 } from './dto/mvp.dto';
 
@@ -34,6 +38,17 @@ type TaskRow = {
   created_by: string;
   created_at: Date;
   updated_at: Date;
+};
+
+type ProfileLineRow = {
+  id: string;
+  line_user_id: string | null;
+};
+
+type LineReplyParsed = {
+  taskId?: string;
+  replyType?: 'done' | 'need_help' | 'contacted' | 'cannot_do';
+  replyText?: string;
 };
 
 @Injectable()
@@ -211,5 +226,288 @@ export class MvpService {
     `);
 
     return rows[0];
+  }
+
+  async sendProgressNotification(dto: SendProgressNotificationDto) {
+    const text = this.buildProgressText(dto);
+    return this.sendLineText({
+      caseId: dto.caseId,
+      targetProfileId: dto.targetProfileId,
+      messageType: 'progress',
+      templateKey: 'progress_v1',
+      payload: dto,
+      text,
+    });
+  }
+
+  async sendTaskNotification(dto: SendTaskNotificationDto) {
+    const text = this.buildTaskText(dto);
+    return this.sendLineText({
+      caseId: dto.caseId,
+      targetProfileId: dto.targetProfileId,
+      messageType: 'task',
+      templateKey: 'task_v1',
+      payload: dto,
+      text,
+    });
+  }
+
+  async handleLineWebhook(rawBody: string, signature: string | undefined, body: LineWebhookDto) {
+    const strictSig = process.env.LINE_SIGNATURE_STRICT === 'true';
+    const signatureOk = this.verifyLineSignature(rawBody, signature);
+
+    if (strictSig && !signatureOk) {
+      return { ok: false, message: 'invalid signature' };
+    }
+
+    let processed = 0;
+    let skipped = 0;
+
+    for (const event of body.events || []) {
+      const eventType = String((event as any).type || '');
+      if (eventType !== 'message') {
+        skipped++;
+        continue;
+      }
+
+      const lineUserId = String((event as any).source?.userId || '');
+      const text = String((event as any).message?.text || '').trim();
+      if (!lineUserId || !text) {
+        skipped++;
+        continue;
+      }
+
+      const profile = await this.getProfileByLineUserId(lineUserId);
+      if (!profile) {
+        skipped++;
+        continue;
+      }
+
+      const parsed = this.parseLineReplyText(text);
+      if (!parsed.replyType) {
+        skipped++;
+        continue;
+      }
+
+      const taskId = parsed.taskId ?? (await this.getLatestPendingTaskId(profile.id));
+      if (!taskId) {
+        skipped++;
+        continue;
+      }
+
+      await this.createTaskReply(taskId, {
+        replierProfileId: profile.id,
+        replyType: parsed.replyType,
+        replyText: parsed.replyText,
+        replyChannel: 'line',
+      });
+
+      processed++;
+    }
+
+    return { ok: true, signatureOk, processed, skipped };
+  }
+
+  private buildProgressText(dto: SendProgressNotificationDto): string {
+    const due = dto.dueAt ? new Date(dto.dueAt).toLocaleString('zh-TW') : '未設定';
+    const mgr = dto.caseManagerName || '個管師';
+    const phone = dto.caseManagerPhone || '請由院方回覆';
+    const care = dto.careMessage || '我們會持續陪伴您完成每一步，請安心。';
+
+    return [
+      '【出院進度更新】',
+      `目前進度：${dto.currentState}`,
+      `下一步：${dto.nextAction}`,
+      `截止時間：${due}`,
+      `聯絡窗口：${mgr} / ${phone}`,
+      `關懷：${care}`,
+    ].join('\n');
+  }
+
+  private buildTaskText(dto: SendTaskNotificationDto): string {
+    const due = dto.dueAt ? new Date(dto.dueAt).toLocaleString('zh-TW') : '未設定';
+    const care = dto.careMessage || '若需要協助，請直接回覆 need_help。';
+
+    return [
+      '【待辦任務提醒】',
+      `任務：${dto.taskTitle}`,
+      `內容：${dto.taskDetail || '請依照院方指示完成回覆。'}`,
+      `截止時間：${due}`,
+      '回覆選項：done / need_help / contacted / cannot_do',
+      `關懷：${care}`,
+      dto.taskId ? `任務代碼：${dto.taskId}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  private async sendLineText(input: {
+    caseId?: string;
+    targetProfileId: string;
+    messageType: 'progress' | 'task' | 'reminder' | 'care';
+    templateKey: string;
+    payload: unknown;
+    text: string;
+  }) {
+    const profileRows = await this.prisma.$queryRaw<ProfileLineRow[]>(Prisma.sql`
+      select id, line_user_id
+      from public.profiles
+      where id = ${input.targetProfileId}::uuid
+      limit 1
+    `);
+
+    const profile = profileRows[0];
+    if (!profile) {
+      throw new NotFoundException('Target profile not found');
+    }
+
+    if (!profile.line_user_id) {
+      await this.insertLineMessageLog({
+        caseId: input.caseId,
+        targetProfileId: input.targetProfileId,
+        messageType: input.messageType,
+        templateKey: input.templateKey,
+        payload: input.payload,
+        lineMessageId: null,
+        deliveryStatus: 'skipped_no_line_user',
+      });
+
+      return { ok: false, deliveryStatus: 'skipped_no_line_user' };
+    }
+
+    const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+    if (!token) {
+      await this.insertLineMessageLog({
+        caseId: input.caseId,
+        targetProfileId: input.targetProfileId,
+        messageType: input.messageType,
+        templateKey: input.templateKey,
+        payload: input.payload,
+        lineMessageId: null,
+        deliveryStatus: 'skipped_no_channel_token',
+      });
+
+      return { ok: false, deliveryStatus: 'skipped_no_channel_token' };
+    }
+
+    const resp = await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: profile.line_user_id,
+        messages: [{ type: 'text', text: input.text }],
+      }),
+    });
+
+    const deliveryStatus = resp.ok ? 'sent' : `failed_${resp.status}`;
+    await this.insertLineMessageLog({
+      caseId: input.caseId,
+      targetProfileId: input.targetProfileId,
+      messageType: input.messageType,
+      templateKey: input.templateKey,
+      payload: input.payload,
+      lineMessageId: null,
+      deliveryStatus,
+    });
+
+    return { ok: resp.ok, deliveryStatus };
+  }
+
+  private async insertLineMessageLog(input: {
+    caseId?: string;
+    targetProfileId: string;
+    messageType: 'progress' | 'task' | 'reminder' | 'care';
+    templateKey: string;
+    payload: unknown;
+    lineMessageId: string | null;
+    deliveryStatus: string;
+  }) {
+    await this.prisma.$executeRaw(Prisma.sql`
+      insert into public.line_messages (
+        case_id,
+        target_profile_id,
+        message_type,
+        template_key,
+        payload,
+        line_message_id,
+        delivery_status
+      ) values (
+        ${input.caseId ?? null}::uuid,
+        ${input.targetProfileId}::uuid,
+        ${input.messageType},
+        ${input.templateKey},
+        ${JSON.stringify(input.payload)}::jsonb,
+        ${input.lineMessageId},
+        ${input.deliveryStatus}
+      )
+    `);
+  }
+
+  private verifyLineSignature(rawBody: string, signature?: string): boolean {
+    const secret = process.env.LINE_CHANNEL_SECRET;
+    if (!secret || !signature) {
+      return false;
+    }
+
+    const digest = createHmac('sha256', secret).update(rawBody).digest('base64');
+    return digest === signature;
+  }
+
+  private async getProfileByLineUserId(lineUserId: string): Promise<{ id: string } | null> {
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      select id
+      from public.profiles
+      where line_user_id = ${lineUserId}
+      limit 1
+    `);
+
+    return rows[0] || null;
+  }
+
+  private async getLatestPendingTaskId(profileId: string): Promise<string | null> {
+    const rows = await this.prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      select id
+      from public.tasks
+      where assigned_to_profile_id = ${profileId}::uuid
+        and status in ('pending', 'replied')
+      order by due_at asc
+      limit 1
+    `);
+
+    return rows[0]?.id || null;
+  }
+
+  private parseLineReplyText(text: string): LineReplyParsed {
+    const normalized = text.trim();
+    const parts = normalized.split(/\s+/);
+
+    // Format example: task:<uuid> done 已完成聯繫
+    let taskId: string | undefined;
+    if (parts[0]?.startsWith('task:')) {
+      taskId = parts[0].slice(5);
+      parts.shift();
+    }
+
+    const first = (parts[0] || '').toLowerCase();
+
+    const map: Record<string, LineReplyParsed['replyType']> = {
+      done: 'done',
+      完成: 'done',
+      need_help: 'need_help',
+      求助: 'need_help',
+      協助: 'need_help',
+      contacted: 'contacted',
+      已聯絡: 'contacted',
+      cannot_do: 'cannot_do',
+      無法: 'cannot_do',
+    };
+
+    const replyType = map[first];
+    const replyText = parts.slice(1).join(' ') || undefined;
+
+    return { taskId, replyType, replyText };
   }
 }

@@ -1,4 +1,14 @@
-import { IsBoolean, IsIn, IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsISO8601,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateCaseDto {
   @IsUUID()
@@ -102,4 +112,74 @@ export class CreateTaskReplyDto {
   @IsOptional()
   @IsIn(['line', 'web'])
   replyChannel?: string;
+}
+
+export class SendProgressNotificationDto {
+  @IsOptional()
+  @IsUUID()
+  caseId?: string;
+
+  @IsUUID()
+  targetProfileId: string;
+
+  @IsIn(['S0', 'S1', 'S2', 'S3', 'S4', 'E1'])
+  currentState: string;
+
+  @IsString()
+  nextAction: string;
+
+  @IsOptional()
+  @IsISO8601()
+  dueAt?: string;
+
+  @IsOptional()
+  @IsString()
+  caseManagerName?: string;
+
+  @IsOptional()
+  @IsString()
+  caseManagerPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  careMessage?: string;
+}
+
+export class SendTaskNotificationDto {
+  @IsOptional()
+  @IsUUID()
+  caseId?: string;
+
+  @IsUUID()
+  targetProfileId: string;
+
+  @IsOptional()
+  @IsUUID()
+  taskId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  taskTitle: string;
+
+  @IsOptional()
+  @IsString()
+  taskDetail?: string;
+
+  @IsOptional()
+  @IsISO8601()
+  dueAt?: string;
+
+  @IsOptional()
+  @IsString()
+  careMessage?: string;
+}
+
+export class LineWebhookDto {
+  @IsOptional()
+  @IsObject()
+  destination?: Record<string, unknown>;
+
+  @IsArray()
+  @IsObject({ each: true })
+  events: Record<string, unknown>[];
 }
