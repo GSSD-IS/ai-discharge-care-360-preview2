@@ -6,6 +6,7 @@ import {
   CreateTaskDto,
   CreateTaskReplyDto,
   LineWebhookDto,
+  RunReminderJobDto,
   SendProgressNotificationDto,
   SendTaskNotificationDto,
   UpdateCaseStateDto,
@@ -78,5 +79,10 @@ export class MvpController {
   ) {
     const rawBody = JSON.stringify(req.body || {});
     return this.mvpService.handleLineWebhook(rawBody, signature, dto);
+  }
+
+  @Post('jobs/reminder-run')
+  async runReminderJob(@Body() dto: RunReminderJobDto) {
+    return this.mvpService.runReminderJob(dto);
   }
 }

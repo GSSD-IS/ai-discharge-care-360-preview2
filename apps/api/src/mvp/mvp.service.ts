@@ -8,6 +8,7 @@ import {
   CreateTaskDto,
   CreateTaskReplyDto,
   LineWebhookDto,
+  RunReminderJobDto,
   SendProgressNotificationDto,
   SendTaskNotificationDto,
   UpdateCaseStateDto,
@@ -49,6 +50,18 @@ type LineReplyParsed = {
   taskId?: string;
   replyType?: 'done' | 'need_help' | 'contacted' | 'cannot_do';
   replyText?: string;
+};
+
+type ReminderCandidate = {
+  task_id: string;
+  case_id: string;
+  task_title: string;
+  task_detail: string | null;
+  due_at: Date;
+  assigned_to_profile_id: string;
+  case_manager_profile_id: string | null;
+  case_manager_name: string | null;
+  case_manager_phone: string | null;
 };
 
 @Injectable()
@@ -308,6 +321,135 @@ export class MvpService {
     return { ok: true, signatureOk, processed, skipped };
   }
 
+  async runReminderJob(dto: RunReminderJobDto) {
+    const now = dto.nowIso ? new Date(dto.nowIso) : new Date();
+    const dryRun = dto.dryRun ?? false;
+    const limit = dto.limit ?? 200;
+    const preDueUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const candidates = await this.prisma.$queryRaw<ReminderCandidate[]>(Prisma.sql`
+      select
+        t.id as task_id,
+        t.case_id,
+        t.task_title,
+        t.task_detail,
+        t.due_at,
+        t.assigned_to_profile_id,
+        cp.profile_id as case_manager_profile_id,
+        cm.display_name as case_manager_name,
+        coalesce(cp.contact_phone, cm.contact_phone) as case_manager_phone
+      from public.tasks t
+      join public.cases c on c.id = t.case_id
+      left join public.case_participants cp
+        on cp.case_id = c.id
+        and cp.participant_type = 'case_manager'
+        and cp.is_primary = true
+      left join public.profiles cm on cm.id = cp.profile_id
+      where t.status in ('pending', 'replied')
+      order by t.due_at asc
+      limit ${limit}
+    `);
+
+    let preDueSent = 0;
+    let overdueEscalated = 0;
+    let skipped = 0;
+
+    for (const c of candidates) {
+      const dueAt = new Date(c.due_at);
+
+      if (dueAt > now && dueAt <= preDueUntil) {
+        const exists = await this.hasRecentReminder({
+          targetProfileId: c.assigned_to_profile_id,
+          templateKey: 'reminder_pre_due_v1',
+          taskId: c.task_id,
+          since: new Date(now.getTime() - 20 * 60 * 60 * 1000),
+        });
+        if (exists) {
+          skipped++;
+          continue;
+        }
+
+        if (!dryRun) {
+          await this.sendReminderNotification({
+            caseId: c.case_id,
+            targetProfileId: c.assigned_to_profile_id,
+            templateKey: 'reminder_pre_due_v1',
+            text: this.buildReminderText({
+              taskTitle: c.task_title,
+              taskDetail: c.task_detail,
+              dueAt,
+              caseManagerName: c.case_manager_name,
+              caseManagerPhone: c.case_manager_phone,
+              escalation: false,
+            }),
+            payload: {
+              stage: 'pre_due',
+              taskId: c.task_id,
+              dueAt: dueAt.toISOString(),
+            },
+          });
+        }
+
+        preDueSent++;
+        continue;
+      }
+
+      if (dueAt <= now) {
+        if (!c.case_manager_profile_id) {
+          skipped++;
+          continue;
+        }
+
+        const exists = await this.hasRecentReminder({
+          targetProfileId: c.case_manager_profile_id,
+          templateKey: 'reminder_overdue_escalation_v1',
+          taskId: c.task_id,
+          since: new Date(now.getTime() - 12 * 60 * 60 * 1000),
+        });
+        if (exists) {
+          skipped++;
+          continue;
+        }
+
+        if (!dryRun) {
+          await this.sendReminderNotification({
+            caseId: c.case_id,
+            targetProfileId: c.case_manager_profile_id,
+            templateKey: 'reminder_overdue_escalation_v1',
+            text: this.buildReminderText({
+              taskTitle: c.task_title,
+              taskDetail: c.task_detail,
+              dueAt,
+              caseManagerName: c.case_manager_name,
+              caseManagerPhone: c.case_manager_phone,
+              escalation: true,
+            }),
+            payload: {
+              stage: 'overdue',
+              taskId: c.task_id,
+              dueAt: dueAt.toISOString(),
+            },
+          });
+        }
+
+        overdueEscalated++;
+        continue;
+      }
+
+      skipped++;
+    }
+
+    return {
+      ok: true,
+      dryRun,
+      now: now.toISOString(),
+      scanned: candidates.length,
+      preDueSent,
+      overdueEscalated,
+      skipped,
+    };
+  }
+
   private buildProgressText(dto: SendProgressNotificationDto): string {
     const due = dto.dueAt ? new Date(dto.dueAt).toLocaleString('zh-TW') : '未設定';
     const mgr = dto.caseManagerName || '個管師';
@@ -339,6 +481,77 @@ export class MvpService {
     ]
       .filter(Boolean)
       .join('\n');
+  }
+
+  private buildReminderText(input: {
+    taskTitle: string;
+    taskDetail: string | null;
+    dueAt: Date;
+    caseManagerName: string | null;
+    caseManagerPhone: string | null;
+    escalation: boolean;
+  }) {
+    const due = input.dueAt.toLocaleString('zh-TW');
+    const managerName = input.caseManagerName || '個管師';
+    const managerPhone = input.caseManagerPhone || '請由院方回覆';
+
+    if (input.escalation) {
+      return [
+        '【逾時升級提醒】',
+        `任務：${input.taskTitle}`,
+        `內容：${input.taskDetail || '請確認任務執行狀態。'}`,
+        `到期時間：${due}`,
+        '狀態：已逾時，請個管師介入追蹤。',
+        `聯絡窗口：${managerName} / ${managerPhone}`,
+      ].join('\n');
+    }
+
+    return [
+      '【任務到期前提醒】',
+      `任務：${input.taskTitle}`,
+      `內容：${input.taskDetail || '請依照指示完成回覆。'}`,
+      `截止時間：${due}`,
+      '回覆選項：done / need_help / contacted / cannot_do',
+      `聯絡窗口：${managerName} / ${managerPhone}`,
+      '關懷：我們會持續陪伴您，若需協助請回覆 need_help。',
+    ].join('\n');
+  }
+
+  private async sendReminderNotification(input: {
+    caseId: string;
+    targetProfileId: string;
+    templateKey: string;
+    text: string;
+    payload: Record<string, unknown>;
+  }) {
+    return this.sendLineText({
+      caseId: input.caseId,
+      targetProfileId: input.targetProfileId,
+      messageType: 'reminder',
+      templateKey: input.templateKey,
+      payload: input.payload,
+      text: input.text,
+    });
+  }
+
+  private async hasRecentReminder(input: {
+    targetProfileId: string;
+    templateKey: string;
+    taskId: string;
+    since: Date;
+  }): Promise<boolean> {
+    const rows = await this.prisma.$queryRaw<{ cnt: number }[]>(Prisma.sql`
+      select count(*)::int as cnt
+      from public.line_messages lm
+      where lm.target_profile_id = ${input.targetProfileId}::uuid
+        and lm.message_type = 'reminder'
+        and lm.template_key = ${input.templateKey}
+        and lm.payload->>'taskId' = ${input.taskId}
+        and lm.created_at >= ${input.since}
+        and lm.delivery_status in ('sent', 'skipped_no_line_user', 'skipped_no_channel_token')
+    `);
+
+    return (rows[0]?.cnt || 0) > 0;
   }
 
   private async sendLineText(input: {

@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsInt,
   IsIn,
   IsISO8601,
   IsNotEmpty,
@@ -8,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator';
 
 export class CreateCaseDto {
@@ -182,4 +184,19 @@ export class LineWebhookDto {
   @IsArray()
   @IsObject({ each: true })
   events: Record<string, unknown>[];
+}
+
+export class RunReminderJobDto {
+  @IsOptional()
+  @IsISO8601()
+  nowIso?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  dryRun?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  limit?: number;
 }
