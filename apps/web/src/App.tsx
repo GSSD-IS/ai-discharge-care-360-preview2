@@ -11,6 +11,7 @@ import PatientHome from './pages/patient/PatientHome';
 import MyPlan from './pages/patient/MyPlan';
 import Education from './pages/patient/Education';
 import RBACSettings from './pages/admin/RBACSettings';
+import MvpPortal from './pages/mvp/MvpPortal';
 
 // Mock Auth Guard
 const RequireAuth: React.FC<{ children: React.ReactNode, allowedRoles?: UserRole[] }> = ({ children, allowedRoles }) => {
@@ -70,6 +71,9 @@ const App: React.FC = () => {
                     <Route path="education" element={<Education />} />
                     <Route index element={<Navigate to="home" replace />} />
                 </Route>
+
+                {/* MVP Portal (for implementation and API validation) */}
+                <Route path="/mvp" element={<MvpPortal />} />
             </Routes>
         </BrowserRouter>
     );
